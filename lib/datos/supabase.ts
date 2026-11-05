@@ -2,7 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { supabaseServidor } from "@/lib/supabase/server";
 import type {
-  Asunto, AvisoUso, Cliente, Despacho, EstimacionMes, ExtraEstado, Llamada, Mensaje, Miembro, PlanCompleto, ResumenHoy, Sesion,
+  Asunto, Aviso, AvisoUso, Cliente, Conversacion, Despacho, EstimacionMes, ExtraEstado, Indicadores, Indice, Integracion, Llamada, Mensaje,
+  MensajeWA, Miembro, Notificacion, PlanCompleto, ReglaId, ResumenHoy, Sesion, SinNoticias,
 } from "@/lib/tipos";
 
 const CAMPOS_DESPACHO =
@@ -143,42 +144,120 @@ const hora = (iso: string) => {
     : d.toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" });
 };
 
+export const integracion = cache(async (): Promise<Integracion> => {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("integraciones").select("estado, ultima_sync, ultimo_error").limit(1).maybeSingle();
+  return { conectada: !!data && (data.estado === "conectada" || data.estado === "error"), ultimaSync: data?.ultima_sync ?? null, error: data?.estado === "error" ? data.ultimo_error : null };
+});
+
+export const indice = cache(async (): Promise<Indice> => {
+  const sb = await supabaseServidor();
+  const s = await sesion();
+  if (!s || s === "sin-despacho") return { porcentaje: null, clientes: 0, informados: 0, asuntos: 0, sello: false, sin_datos: true };
+  const { data } = await sb.rpc("indice_informado", { p_despacho: s.despacho.id });
+  return data as Indice;
+});
+
+export async function indicadores(): Promise<Indicadores> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.rpc("indicadores_mes");
+  return (data ?? { minutos_medios_notificacion: null, como_va_lo_mio: 0, asuntos_excluidos: 0 }) as Indicadores;
+}
+
+export async function historicoIndice(): Promise<{ mes: string; porcentaje: number | null; sello: boolean }[]> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("indice_mensual").select("mes, porcentaje, sello").order("mes", { ascending: false }).limit(12);
+  return (data ?? []) as { mes: string; porcentaje: number | null; sello: boolean }[];
+}
+
+const CAMPOS_NOTIF = "id, asunto_id, origen, archivo_nombre, estado, error, tipo_resolucion, organo, procedimiento, lo_que_dice, resumen, plazo_tipo, plazo_descripcion, plazo_dias, plazo_fecha, senalamiento_en, cliente_debe_actuar, accion_cliente, fase_sugerida, ia, creada_en, asuntos(id, numero, descripcion, informar, abogado, area, clientes!asuntos_cliente_id_fkey(id, nombre, idioma, canal))";
+type FilaNotif = Omit<Notificacion, "asunto" | "cliente" | "mensaje"> & { asuntos: (Notificacion["asunto"] & { clientes: Notificacion["cliente"] }) | null };
+
+export async function notificaciones(filtro: "pendientes" | "todas" = "pendientes"): Promise<Notificacion[]> {
+  const sb = await supabaseServidor();
+  let q = sb.from("notificaciones").select(CAMPOS_NOTIF).order("creada_en", { ascending: false }).limit(200);
+  if (filtro === "pendientes") q = q.in("estado", ["recibida", "interpretando", "lista", "error"]);
+  const { data, error } = await q;
+  if (error) throw error;
+  const filas = (data ?? []) as unknown as FilaNotif[];
+  const ids = filas.map((f) => f.id);
+  const { data: ms } = ids.length ? await sb.from("mensajes").select("*").in("notificacion_id", ids).neq("estado", "cancelado") : { data: [] };
+  return filas.map((f) => {
+    const { asuntos, ...resto } = f;
+    const { clientes, ...asunto } = asuntos ?? ({} as NonNullable<FilaNotif["asuntos"]>);
+    return { ...resto, asunto: asuntos ? asunto : null, cliente: asuntos ? clientes : null,
+      mensaje: ((ms ?? []) as Notificacion["mensaje"][]).find((m) => m && (m as unknown as { notificacion_id: string }).notificacion_id === f.id) ?? null } as Notificacion;
+  });
+}
+
+export async function reglas(): Promise<ReglaId[]> {
+  const s = await sesion();
+  if (!s || s === "sin-despacho") return [];
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("despachos").select("envio_auto").eq("id", s.despacho.id).single();
+  return (data?.envio_auto ?? []) as ReglaId[];
+}
+
+export async function avisos(): Promise<Aviso[]> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("mensajes").select("*, clientes(nombre), asuntos(numero, descripcion)")
+    .in("tipo", ["recordatorio_semana", "recordatorio_vispera", "cierre", "sin_noticias", "manual"])
+    .in("estado", ["borrador", "programado", "error"]).order("programado_para", { ascending: true, nullsFirst: false }).limit(100);
+  type F = Aviso & { clientes: { nombre: string } | null; asuntos: { numero: string | null; descripcion: string | null } | null };
+  return ((data ?? []) as unknown as F[]).map((m) => ({ ...m, cliente: m.clientes?.nombre ?? null, asunto: m.asuntos ? [m.asuntos.numero, m.asuntos.descripcion].filter(Boolean).join(" · ") : null }));
+}
+
+export async function conversaciones(): Promise<Conversacion[]> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("wa_conversaciones").select("*, clientes!wa_conversaciones_cliente_id_fkey(nombre)").order("ultimo_mensaje_en", { ascending: false }).limit(200);
+  const filas = (data ?? []) as unknown as (Conversacion & { clientes: { nombre: string } | null; verificada_hasta: string | null })[];
+  const ids = filas.map((c) => c.id);
+  const { data: ult } = ids.length ? await sb.from("wa_mensajes").select("conversacion_id, texto, transcripcion, creado_en").in("conversacion_id", ids).order("creado_en", { ascending: false }).limit(1000) : { data: [] };
+  return filas.map((c) => ({
+    ...c, cliente: c.clientes?.nombre ?? null, verificada: !!c.verificada_hasta && new Date(c.verificada_hasta) > new Date(),
+    ultimo_texto: ((ult ?? []) as { conversacion_id: string; texto: string | null; transcripcion: string | null }[]).filter((m) => m.conversacion_id === c.id).map((m) => m.transcripcion ?? m.texto)[0] ?? null,
+  }));
+}
+
+export async function mensajesWA(conversacion: string): Promise<MensajeWA[]> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("wa_mensajes").select("id, direccion, tipo, texto, transcripcion, media_path, estado, auto, regla_auto, creado_en, enviado_por")
+    .eq("conversacion_id", conversacion).order("creado_en").limit(500);
+  const { data: eq } = await sb.from("perfiles").select("id, nombre, email");
+  const nombres = new Map(((eq ?? []) as { id: string; nombre: string | null; email: string | null }[]).map((p) => [p.id, p.nombre ?? p.email]));
+  return ((data ?? []) as (MensajeWA & { enviado_por: string | null })[]).map((m) => ({ ...m, enviado_por_nombre: m.enviado_por ? nombres.get(m.enviado_por) ?? null : null }));
+}
+
+export async function numeroWhatsApp(): Promise<{ numero: string; modo: "pruebas" | "produccion" } | null> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.from("wa_numeros").select("numero, modo").eq("activo", true).maybeSingle();
+  return (data as { numero: string; modo: "pruebas" | "produccion" } | null) ?? null;
+}
+
+export async function sinNoticias(): Promise<SinNoticias[]> {
+  const sb = await supabaseServidor();
+  const { data } = await sb.rpc("asuntos_sin_noticias", { p_dias: 30 });
+  const filas = (data ?? []) as Omit<SinNoticias, "borrador">[];
+  const ids = filas.map((f) => f.asunto_id);
+  const { data: b } = ids.length ? await sb.from("mensajes").select("id, asunto_id").eq("tipo", "sin_noticias").eq("estado", "borrador").in("asunto_id", ids) : { data: [] };
+  return filas.map((f) => ({ ...f, borrador: ((b ?? []) as { id: string; asunto_id: string }[]).find((x) => x.asunto_id === f.asunto_id)?.id ?? null }));
+}
+
 export async function hoy(): Promise<ResumenHoy> {
   const sb = await supabaseServidor();
   const s = await sesion();
   if (!s || s === "sin-despacho") return { porRevisar: 0, asuntosActivos: 0, informados: null, novedades: [] };
-  const [{ data: borradores, count }, { data: activos }, { data: noticias }] = await Promise.all([
-    sb.from("mensajes").select("id, titulo, tipo, creado_en, cliente_id, asunto_id, clientes(nombre)", { count: "exact" })
-      .eq("estado", "borrador").order("creado_en", { ascending: false }).limit(8),
-    sb.rpc("asuntos_activos_de", { p_despacho: s.despacho.id }),
-    sb.from("asuntos_noticias").select("asunto_id, cliente, informar, ultimo_aviso, fecha_apertura, descripcion, estado").eq("informar", true).limit(5000),
+  const [nots, { data: activos }, ind, sin] = await Promise.all([
+    notificaciones("pendientes"), sb.rpc("asuntos_activos_de", { p_despacho: s.despacho.id }), indice(), sinNoticias(),
   ]);
-  const abiertos = (noticias ?? []).filter((a) => !/closed|cerrado/i.test(a.estado ?? "") && a.cliente);
-  const dias = (iso: string | null) => (iso ? (Date.now() - new Date(iso).getTime()) / 864e5 : Infinity);
-  const informados = abiertos.length ? Math.round((100 * abiertos.filter((a) => dias(a.ultimo_aviso) < 30).length) / abiertos.length) : null;
-  type Borrador = { id: string; titulo: string; tipo: string; creado_en: string; asunto_id: string | null; clientes: { nombre: string } | null };
-  const novedades: ResumenHoy["novedades"] = ((borradores ?? []) as unknown as Borrador[]).map((m) => ({
-    id: m.id,
-    hora: hora(m.creado_en),
-    cliente: m.clientes?.nombre ?? "Sin cliente",
-    texto: m.titulo || "Mensaje para el cliente",
-    estado: m.tipo === "novedad" ? "Por aprobar" : "Borrador listo",
-    href: m.asunto_id ? `/asuntos/${m.asunto_id}` : "/hoy",
+  const novedades: ResumenHoy["novedades"] = nots.slice(0, 8).map((n) => ({
+    id: n.id, hora: hora(n.creada_en), cliente: n.cliente?.nombre ?? (n.asunto ? "Asunto sin cliente" : "Sin asignar"),
+    texto: [n.tipo_resolucion ?? "Notificación", n.fase_sugerida ?? n.resumen ?? n.archivo_nombre].filter(Boolean).join(" · "),
+    estado: n.estado === "lista" && n.mensaje ? "Borrador listo" : n.estado === "lista" ? "Por aprobar" : "Nueva",
+    href: `/notificaciones?n=${n.id}`,
   }));
-  const sinNoticias = abiertos
-    .filter((a) => dias(a.ultimo_aviso ?? a.fecha_apertura) > 30)
-    .sort((a, b) => dias(b.ultimo_aviso ?? b.fecha_apertura) - dias(a.ultimo_aviso ?? a.fecha_apertura))
-    .slice(0, 5)
-    .map((a) => {
-      const d = dias(a.ultimo_aviso ?? a.fecha_apertura);
-      return {
-        id: `sn-${a.asunto_id}`,
-        hora: Number.isFinite(d) ? `${Math.floor(d)} d` : "—",
-        cliente: a.cliente as string,
-        texto: `${a.descripcion ?? "Asunto"} · sin noticias`,
-        estado: "Contarle algo" as const,
-        href: `/asuntos/${a.asunto_id}`,
-      };
-    });
-  return { porRevisar: count ?? 0, asuntosActivos: Number(activos ?? 0), informados, novedades: [...novedades, ...sinNoticias] };
+  const contar: ResumenHoy["novedades"] = sin.slice(0, 5).map((a) => ({
+    id: `sn-${a.asunto_id}`, hora: `${a.dias} d`, cliente: a.cliente, texto: `${a.descripcion ?? a.numero ?? "Asunto"} · sin noticias`, estado: "Contarle algo", href: "/sin-noticias",
+  }));
+  return { porRevisar: nots.filter((n) => n.estado !== "interpretando").length, asuntosActivos: Number(activos ?? 0), informados: ind.porcentaje, novedades: [...novedades, ...contar] };
 }
