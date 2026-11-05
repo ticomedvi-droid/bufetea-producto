@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bufetea · Panel del despacho</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Bufetea · panel de demostración. Arena clara, tinta, rojo Derecho para aprobar y luz de ventana para lo que espera al abogado. */
+:root {
+  --paper: #ffffff;
+  --mist: #f5f2ee;
+  --ink: #141826;
+  --ink-2: #5c6373;
+  --line: #e4ded6;
+  --green: #b4233c;
+  --green-ink: #8f1a2f;
+  --green-soft: #fbe9ec;
+  --marker: #f2c46d;
+  --marker-ink: #141826;
+  --warn: #b85c0f;
+  --warn-soft: #fdf0e2;
+  --bad: #b3261e;
+  --ok: #2c8a5a;
+  --ok-soft: #e3f3ea;
+  --bubble-out: #e7f6ee;
+  --court: #fbfaf7;
+  --night: #0c1322;
+  --night-3: #1b2640;
+  --display: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --body: "Onest", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --legal: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 6px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 800; font-size: 1.3rem; letter-spacing: -0.045em; }
+.logo svg { width: 30px; height: 30px; flex: none; overflow: visible; }
+.logo .col, .logo .cap, .logo .base { fill: var(--green); }
+.logo .col { transform-box: fill-box; transform-origin: 50% 100%; animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.logo .col:nth-of-type(2) { animation-delay: .08s; } .logo .col:nth-of-type(3) { animation-delay: .16s; }
+.logo .win { fill: var(--marker); opacity: 0; transition: opacity .25s ease; }
+.logo:hover .win { opacity: 1; }
+.logo:hover .col { animation: bob .7s cubic-bezier(.2,.7,.2,1); }
+.logo .word b { color: var(--green); }
+@keyframes rise { from { transform: scaleY(0); } }
+@keyframes bob { 40% { transform: scaleY(1.18); } }
+.mute { color: var(--ink-2); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 1rem/1 var(--body); padding: 13px 20px; border-radius: 10px; border: 1px solid transparent; text-decoration: none; cursor: pointer; }
+.btn.primary { background: var(--green); color: #fff; }
+.btn.primary:hover { background: var(--green-ink); }
+.btn.ghost { border-color: var(--line); background: var(--paper); color: var(--ink); }
+.btn.ghost:hover { border-color: var(--ink-2); }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; background: var(--mist); color: var(--ink-2); white-space: nowrap; }
+.tag.green { background: var(--ok-soft); color: var(--ok); }
+.tag.warn { background: #fff3d6; color: #8a5a00; }
+.tag.red { background: var(--green-soft); color: var(--green); }
+.court { font-family: var(--legal); font-size: 1.02rem; line-height: 1.55; background: var(--court); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; color: var(--ink); }
+.bubble { background: var(--bubble-out); border-radius: 14px 14px 4px 14px; padding: 12px 14px; font-size: .97rem; line-height: 1.45; color: var(--ink); }
+.eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--green); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+</style>
+<style>
+/* Panel: barra lateral de tinta clara, contenido en papel; el verde solo para aprobar y el amarillo para lo que espera al abogado. */
+html, body { height: 100%; }
+body { font-size: 15px; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.app { display: grid; grid-template-columns: 236px minmax(0,1fr); min-height: 100%; }
+.side { background: var(--night); color: #eef1f7; border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; }
+.side .logo { padding: 0 8px; font-size: 1.2rem; }
+.side .logo svg { width: 28px; height: 28px; }
+.menu { display: grid; gap: 2px; }
+.menu a { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border-radius: 9px; text-decoration: none; color: #9aa4ba; font-weight: 500; }
+.menu a:hover { background: var(--night-3); color: #fff; }
+.menu a[aria-current="page"] { background: var(--night-3); color: #fff; }
+.count { min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--marker); color: var(--marker-ink); font-size: .78rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.count:empty { display: none; }
+.side .foot { margin-top: auto; font-size: .82rem; color: #9aa4ba; padding: 0 8px; display: grid; gap: 6px; }
+.side .foot a { color: #f2c46d; }
+.side .logo { color: #eef1f7; } .side .logo .col, .side .logo .cap, .side .logo .base { fill: #ee6b7f; } .side .logo .word b { color: #ee6b7f; }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px max(24px, env(safe-area-inset-right, 0px)) 16px 28px; border-bottom: 1px solid var(--line); }
+.bar h1 { font-size: 1.45rem; }
+.bar .who { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--ink-2); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-soft); color: var(--green-ink); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; }
+.view { padding: 24px max(24px, env(safe-area-inset-right, 0px)) 48px 28px; display: grid; gap: 22px; align-content: start; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.stat { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.stat b { font-family: var(--display); font-size: 1.9rem; font-weight: 650; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--ink-2); font-size: .88rem; }
+.stat.hl { border-color: var(--marker); background: color-mix(in srgb, var(--marker) 16%, var(--paper)); }
+
+.cols { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 18px; align-items: start; }
+.panel { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.panel > h2 { font-size: 1.02rem; padding: 13px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.panel > h2 a { font-family: var(--body); font-size: .85rem; font-weight: 600; color: var(--green-ink); }
+.row { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; background: var(--paper); border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; font: inherit; color: inherit; }
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--mist); }
+.row[aria-selected="true"] { background: var(--green-soft); }
+.row .t { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: .85rem; min-width: 3.2rem; }
+.row b { font-weight: 600; display: block; }
+.row .d { color: var(--ink-2); font-size: .88rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty { padding: 22px 16px; color: var(--ink-2); }
+
+.split { display: grid; grid-template-columns: minmax(0,340px) minmax(0,1fr); gap: 18px; align-items: start; }
+.detail { border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; background: var(--paper); }
+.detail h2 { font-size: 1.35rem; }
+.dhead { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.lbl { font-size: .74rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; display: block; }
+textarea { width: 100%; min-height: 230px; resize: vertical; font: inherit; font-size: .97rem; line-height: 1.5; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bubble-out); color: var(--ink); }
+.plazo { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn.sm { padding: 9px 14px; font-size: .9rem; }
+.btn.link { background: none; border: 0; color: var(--ink-2); padding: 9px 6px; }
+.note { font-size: .84rem; color: var(--ink-2); }
+.excluded { background: var(--warn-soft); color: var(--ink); border-radius: 10px; padding: 12px 14px; font-size: .93rem; }
+.done { background: var(--green-soft); border-radius: 10px; padding: 12px 14px; font-size: .93rem; color: var(--ink); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: .93rem; }
+.kv dt { color: var(--ink-2); }
+.kv dd { margin: 0; min-width: 0; }
+.transcript { display: grid; gap: 8px; }
+.transcript .m { max-width: 88%; display: grid; gap: 2px; }
+.transcript .m p { background: var(--mist); padding: 8px 12px; border-radius: 12px 12px 12px 4px; }
+.transcript .m.s { justify-self: end; }
+.transcript .m.s p { background: var(--green-soft); border-radius: 12px 12px 4px 12px; }
+.transcript .m small { color: var(--ink-2); font-size: .72rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.transcript .m.s small { text-align: right; }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: .92rem; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .74rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); background: var(--mist); }
+tr:last-child td { border-bottom: 0; }
+td .d { color: var(--ink-2); font-size: .85rem; display: block; }
+.late { color: var(--warn); font-weight: 600; }
+
+/* Sofía */
+.sim { display: grid; grid-template-columns: minmax(0,300px) minmax(0,1fr); gap: 18px; align-items: start; }
+.scen { display: grid; gap: 8px; }
+.scen button { text-align: left; font: inherit; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); cursor: pointer; display: grid; gap: 2px; }
+.scen button:hover { border-color: var(--ink-2); }
+.scen button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); }
+.scen button span { color: var(--ink-2); font-size: .86rem; }
+.chat { border: 1px solid var(--line); border-radius: 16px; background: var(--paper); display: flex; flex-direction: column; min-height: 460px; }
+.chat .ch { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: .9rem; }
+.chat .log { padding: 16px; display: grid; gap: 10px; align-content: start; flex: 1; }
+.chat .log .m { max-width: 82%; display: grid; gap: 2px; animation: in .25s ease-out; }
+.chat .log .m p { padding: 10px 13px; border-radius: 14px 14px 14px 4px; background: var(--mist); }
+.chat .log .m.s { justify-self: start; }
+.chat .log .m.s p { background: var(--green-soft); }
+.chat .log .m.u { justify-self: end; }
+.chat .log .m.u p { background: var(--bubble-out); border-radius: 14px 14px 4px 14px; }
+.chat .log .m small { font-size: .72rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.chat .log .sys { justify-self: center; font-size: .82rem; color: var(--ink-2); background: var(--mist); border-radius: 999px; padding: 5px 12px; text-align: center; }
+.chat .log .sys.warn { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+.chat .reply { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; min-height: 62px; align-items: center; }
+
+.kanban { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 14px; overflow-x: auto; padding-bottom: 6px; }
+.kcol { background: var(--mist); border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; min-height: 320px; }
+.kcol h3 { font-size: .82rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; }
+.kcard { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; animation: in .3s ease-out; }
+.kcard b { font-size: .95rem; }
+.kcard .d { color: var(--ink-2); font-size: .84rem; }
+.kcard .f { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kcard button { white-space: nowrap; flex: none; font: 600 .82rem var(--body); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; cursor: pointer; color: var(--ink); }
+.kcard button:hover { border-color: var(--green); color: var(--green); }
+.wa { display: grid; grid-template-columns: minmax(0,320px) minmax(0,1fr); gap: 18px; align-items: start; }
+.thread { border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; min-height: 520px; background: #efeae2; }
+.thread .th { background: var(--paper); padding: 12px 16px; border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+.thread .msgs { padding: 16px; display: grid; gap: 8px; align-content: start; flex: 1; }
+.thread .mm { max-width: 78%; background: var(--paper); padding: 9px 12px; border-radius: 12px 12px 12px 4px; font-size: .94rem; box-shadow: 0 1px 0 rgba(0,0,0,.05); }
+.thread .mm.o { justify-self: end; background: #d9fdd3; border-radius: 12px 12px 4px 12px; }
+.thread .mm small { display: block; font-size: .72rem; color: var(--ink-2); margin-top: 3px; }
+.thread .mm .att { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.thread .compose { background: var(--paper); padding: 12px 14px; border-top: 1px solid var(--line); border-radius: 0 0 14px 14px; display: grid; gap: 8px; }
+.thread .compose textarea { min-height: 70px; background: var(--paper); }
+@media (max-width: 1100px) { .wa { grid-template-columns: 1fr; } }
+.steps2 { display: grid; gap: 10px; }
+.steps2 .st { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; font-size: .93rem; }
+.steps2 .st i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); }
+.steps2 .st.d i { background: var(--ok); border-color: var(--ok); }
+.steps2 .st.c i { border-color: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+@keyframes in { from { opacity: 0; transform: translateY(4px); } }
+
+.toast { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--paper); padding: 12px 16px; border-radius: 12px; font-size: .92rem; max-width: min(420px, calc(100vw - 40px)); box-shadow: 0 12px 30px -12px rgba(0,0,0,.4); z-index: 50; }
+
+@media (max-width: 1100px) { .stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .cols, .split, .sim { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; align-items: center; gap: 10px; padding: 10px max(14px, env(safe-area-inset-left, 0px)) 10px max(14px, env(safe-area-inset-left, 0px)); overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .side .logo span { display: none; }
+  .menu { display: flex; gap: 4px; }
+  .menu a { white-space: nowrap; padding: 8px 10px; }
+  .side .foot { display: none; }
+  .bar, .view { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .bar .who span.n { display: none; }
+  .two { grid-template-columns: 1fr; }
+}
+.msep { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #7c87a3; padding: 14px 10px 4px; }
+.role { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+.role select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: #fff; }
+.langs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.langs button { font: 600 .8rem var(--body); border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 10px; cursor: pointer; }
+.langs button[aria-pressed="true"] { background: var(--ok); color: #fff; border-color: var(--ok); }
+.big { font-family: var(--display); font-size: 4rem; font-weight: 750; letter-spacing: -0.05em; color: var(--green); line-height: 1; }
+.meter { height: 12px; border-radius: 99px; background: var(--mist); overflow: hidden; } .meter i { display: block; height: 100%; background: var(--ok); border-radius: 99px; }
+.seal { display: inline-flex; align-items: center; gap: 12px; border: 2px solid var(--marker); border-radius: 14px; padding: 12px 16px; background: #fffaf0; }
+.seal b { display: block; font-family: var(--display); font-size: 1.05rem; } .seal small { color: var(--ink-2); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; align-items: start; }
+@media (max-width: 1000px) { .grid2 { grid-template-columns: 1fr; } }
+.chk { display: grid; gap: 8px; } .chk div { display: flex; gap: 10px; align-items: center; font-size: .93rem; } .chk i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); flex: none; } .chk .ok i { background: var(--ok); border-color: var(--ok); }
+.ph { width: 300px; max-width: 100%; border: 10px solid var(--night); border-radius: 34px; overflow: hidden; background: #fff; margin: 0 auto; }
+.ph .pt { background: var(--night); color: #fff; padding: 14px 16px; } .ph .pt small { color: #9aa4ba; display: block; }
+.ph .pb { padding: 14px; display: grid; gap: 10px; font-size: .9rem; }
+.fase { display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; } .fase i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); margin-top: 4px; } .fase.d i { background: var(--ok); border-color: var(--ok); } .fase.c i { border-color: var(--green); background: var(--green-soft); }
+
+[hidden] { display: none !important; }
+.gate { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--paper); }
+.gbrand { position: relative; overflow: hidden; color: #eef1f7; display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+  padding: max(40px, env(safe-area-inset-top, 0px)) clamp(28px, 5vw, 72px) 36px max(clamp(28px, 5vw, 72px), env(safe-area-inset-left, 0px));
+  background: radial-gradient(700px 500px at 0% 0%, rgba(239,59,93,.38), transparent 65%), radial-gradient(600px 400px at 100% 100%, rgba(246,185,74,.18), transparent 65%), #07080d; }
+.gbrand::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 52px 52px; -webkit-mask-image: radial-gradient(ellipse 80% 70% at 30% 40%, #000 20%, transparent 75%); mask-image: radial-gradient(ellipse 80% 70% at 30% 40%, #000 20%, transparent 75%); }
+.gbrand > * { position: relative; z-index: 1; }
+.gbrand .logo { color: #fff; } .gbrand .logo b { color: #ff5a78; }
+.gbrand h2 { font-size: clamp(2.1rem, 3.8vw, 3.4rem); line-height: 1.02; letter-spacing: -0.045em; max-width: 15ch; color: #fff; }
+.gbrand h2 em { font-style: normal; background: linear-gradient(100deg, #ff5a78, #ef3b5d 35%, #f6b94a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gbrand p { color: #b4bacb; max-width: 46ch; margin-top: 18px; font-size: 1.05rem; }
+.gpills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 26px; }
+.gpills span { font-size: .82rem; color: #e3e6ef; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.05); border-radius: 999px; padding: 7px 12px; }
+.gpills span::before { content: "●"; color: #3ad69b; margin-right: 7px; font-size: .6rem; vertical-align: 2px; }
+.gfoot { font-size: .8rem; color: #8790a6; }
+.gside { display: grid; place-items: center; background: var(--mist); padding: 32px max(16px, env(safe-area-inset-right, 0px)) 32px 16px; }
+@media (max-width: 860px) {
+  .gate { grid-template-columns: minmax(0, 1fr); }
+  .gbrand { padding: max(28px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 28px max(20px, env(safe-area-inset-left, 0px)); gap: 18px; }
+  .gbrand h2 { font-size: 1.9rem; } .gbrand p { font-size: .98rem; margin-top: 12px; } .gpills, .gfoot { display: none; }
+  .gside { padding: 24px max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); align-items: start; }
+}
+.gcard { width: min(420px, 100%); background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: grid; gap: 16px; box-shadow: 0 30px 60px -40px rgba(12,19,34,.45); }
+.gcard .logo { justify-self: start; }
+@media (min-width: 861px) { #g-entrar > .logo { display: none; } }
+.gcard h1 { font-size: 1.6rem; }
+.gcard.load { justify-items: center; text-align: center; border: 0; box-shadow: none; background: none; }
+.seg { display: flex; gap: 4px; background: var(--mist); padding: 4px; border-radius: 10px; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 9px; border-radius: 8px; font: 600 .95rem var(--body); color: var(--ink-2); cursor: pointer; }
+.seg button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.gform { display: grid; gap: 12px; }
+.fld { display: grid; gap: 5px; }
+.fld label { font-size: .82rem; font-weight: 600; color: var(--ink-2); }
+.fld input, .buscar { font: inherit; font-size: .97rem; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-width: 0; }
+.fld input:focus, .buscar:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+.gmsg { font-size: .9rem; min-height: 1.3em; }
+.gmsg.err { color: var(--bad); } .gmsg.ok { color: var(--ok); }
+.lnk { background: none; border: 0; padding: 0; color: var(--green); font: 600 .9rem var(--body); cursor: pointer; justify-self: start; }
+.spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--green); animation: gira .8s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+.ej { display: flex; gap: 12px; align-items: flex-start; background: #fff7e6; border: 1px solid #f2dca8; color: #6b4a00; border-radius: 12px; padding: 12px 16px; font-size: .92rem; }
+.ej b { color: #4d3500; }
+.ej .tag { flex: none; margin-top: 1px; }
+.toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.toolbar .mute { max-width: 60ch; }
+.buscar { width: 260px; max-width: 100%; }
+.clio-logo { width: 44px; height: 44px; border-radius: 12px; background: #0f6bdc; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .85rem; letter-spacing: -.02em; flex: none; }
+.conn { padding: 18px; display: grid; gap: 14px; }
+.connh { display: flex; gap: 14px; align-items: flex-start; }
+.connh > div { min-width: 0; flex: 1; }
+.aviso { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
+.aviso.bad { background: var(--green-soft); color: var(--bad); }
+.chk2 { display: flex; gap: 10px; align-items: flex-start; font-size: .92rem; color: var(--ink-2); }
+.chk2 input { margin-top: 4px; accent-color: var(--green); }
+.btn.danger { border-color: #ecc3ca; color: var(--bad); background: var(--paper); }
+.btn.danger:hover { border-color: var(--bad); }
+.btn:disabled { opacity: .55; cursor: default; }
+.bar .who .btn { padding: 7px 12px; font-size: .85rem; }
+div.row { cursor: default; }
+div.row:hover { background: var(--paper); }
+.prox { color: var(--ink-2); font-size: .85rem; }
+@media (max-width: 760px) { .buscar { width: 100%; } .toolbar { align-items: stretch; } }
+
+/* ===== Bufetea · producto con la identidad de la web (Geist, rubí→ámbar, barra de noche) ===== */
+:root {
+  --paper: #ffffff; --mist: #f4f4f7; --ink: #0f1220; --ink-2: #5d6476; --line: #e7e7ee;
+  --green: #e11d48; --green-ink: #be123c; --green-soft: #ffe8ee;
+  --marker: #f6b94a; --marker-ink: #3d2a00;
+  --ok: #0f9d68; --ok-soft: #e3f6ee; --bubble-out: #ecf9f2; --court: #fbfaf8;
+  --night: #07080d; --night-3: #161925;
+  --grad: linear-gradient(100deg, #ff5a78 0%, #ef3b5d 35%, #f6b94a 100%);
+  --display: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+  --legal: Georgia, "Times New Roman", serif;
+  --r: 14px; --sh: 0 1px 2px rgba(15,18,32,.04), 0 12px 32px -18px rgba(15,18,32,.22);
+}
+body { background: var(--mist); letter-spacing: -0.005em; }
+h1, h2, h3 { letter-spacing: -0.035em; font-weight: 650; }
+/* barra lateral */
+.side { background: radial-gradient(420px 260px at 0% 0%, rgba(239,59,93,.22), transparent 70%), var(--night); border-right: 1px solid rgba(255,255,255,.06); gap: 18px; }
+.side .logo .col, .side .logo .cap, .side .logo .base { fill: #ef3b5d; } .side .logo .word b { color: #ff5a78; }
+.menu a { color: #a3a9ba; font-size: .93rem; position: relative; transition: background .15s, color .15s; }
+.menu a:hover { background: rgba(255,255,255,.06); }
+.menu a[aria-current="page"] { background: rgba(255,255,255,.08); color: #fff; }
+.menu a[aria-current="page"]::before { content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--grad); }
+.msep { font-family: var(--mono); font-weight: 500; letter-spacing: .04em; text-transform: none; font-size: .74rem; color: #6c7387; padding: 14px 10px 4px; }
+.count { background: var(--grad); color: #fff; }
+.menu .lock { display: inline-flex; color: #f6b94a; opacity: .9; }
+.menu a.locked { color: #7d8396; }
+/* barra superior */
+.bar { background: rgba(255,255,255,.85); -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px); position: sticky; top: 0; z-index: 20; }
+.bar h1 { font-size: 1.35rem; }
+.plan-badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: .76rem; color: var(--ink); background: var(--mist); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; text-decoration: none; }
+.plan-badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.avatar { background: var(--grad); color: #fff; }
+/* contenido */
+.view { gap: 20px; }
+.panel, .detail, .tablewrap, .chat, .stat { border-color: var(--line); border-radius: var(--r); box-shadow: var(--sh); background: var(--paper); }
+.stat { padding: 16px 18px; }
+.stat b { font-weight: 650; letter-spacing: -0.04em; }
+.stat.hl { border-color: transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--grad) border-box; border: 1.5px solid transparent; }
+.row:hover { background: #f8f8fb; }
+.row[aria-selected="true"] { background: #fff1f4; box-shadow: inset 3px 0 0 #ef3b5d; }
+.btn { border-radius: 999px; font-weight: 600; transition: transform .15s, box-shadow .2s, background-position .4s; }
+.btn.primary { background: var(--grad); background-size: 160% 100%; color: #fff; box-shadow: 0 10px 24px -14px rgba(239,59,93,.9); }
+.btn.primary:hover { background: var(--grad); background-size: 160% 100%; background-position: 100% 0; }
+.btn.ghost { border-color: var(--line); }
+.tag { font-family: var(--mono); font-weight: 500; letter-spacing: 0; text-transform: none; font-size: .74rem; }
+.tag.green { background: var(--ok-soft); color: var(--ok); }
+.tag.warn { background: #fff4dc; color: #8a5a00; }
+.lbl, th { font-family: var(--mono); font-weight: 500; letter-spacing: .02em; text-transform: none; font-size: .76rem; }
+.done { background: var(--ok-soft); }
+.langs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); }
+.big { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.meter i { background: linear-gradient(90deg, #0f9d68, #3ad69b); }
+.toast { background: var(--night); border: 1px solid rgba(255,255,255,.08); }
+.seal { border-color: #f6b94a; background: #fffaf0; }
+
+/* ===== acceso (como finkea.app) ===== */
+.login { position: fixed; inset: 0; z-index: 100; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--mist); overflow-y: auto; }
+.login .lb { position: relative; overflow: hidden; color: #eef1f7; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: max(40px, env(safe-area-inset-top, 0px)) clamp(28px, 5vw, 72px) 36px max(clamp(28px, 5vw, 72px), env(safe-area-inset-left, 0px));
+  background: radial-gradient(700px 500px at 0% 0%, rgba(239,59,93,.4), transparent 65%), radial-gradient(600px 400px at 100% 100%, rgba(246,185,74,.2), transparent 65%), #07080d; }
+.login .lb::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 52px 52px; -webkit-mask-image: radial-gradient(ellipse 80% 70% at 30% 40%, #000 20%, transparent 75%); mask-image: radial-gradient(ellipse 80% 70% at 30% 40%, #000 20%, transparent 75%); }
+.login .lb > * { position: relative; z-index: 1; }
+.login .lb .logo { color: #fff; } .login .lb .logo .col, .login .lb .logo .cap, .login .lb .logo .base { fill: #ef3b5d; } .login .lb .logo .word b { color: #ff5a78; }
+.login h2.big2 { font-size: clamp(2.1rem, 3.8vw, 3.4rem); line-height: 1.02; letter-spacing: -0.045em; max-width: 15ch; color: #fff; }
+.login h2.big2 em { font-style: normal; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.login .lb p { color: #b4bacb; max-width: 46ch; margin-top: 18px; font-size: 1.05rem; }
+.login .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 26px; }
+.login .pills span { font-size: .82rem; color: #e3e6ef; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.05); border-radius: 999px; padding: 7px 12px; }
+.login .pills span::before { content: "●"; color: #3ad69b; margin-right: 7px; font-size: .6rem; vertical-align: 2px; }
+.login .lf { font-size: .8rem; color: #8790a6; }
+.login .lr { display: grid; place-items: center; padding: 32px max(16px, env(safe-area-inset-right, 0px)) 32px 16px; }
+.login .card { width: min(400px, 100%); display: grid; gap: 16px; }
+.login .card h1 { font-size: 1.9rem; }
+.login .fld { display: grid; gap: 6px; }
+.login .fld label { font-size: .84rem; font-weight: 600; color: var(--ink-2); display: flex; justify-content: space-between; }
+.login .fld label a { color: var(--green); font-weight: 600; text-decoration: none; }
+.login .fld input { font: inherit; font-size: 1rem; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+.login .fld input:focus { outline: 2px solid #ef3b5d; outline-offset: 1px; border-color: transparent; }
+.login .btn.primary { padding: 14px 20px; font-size: 1rem; }
+.login .demohint { font-size: .84rem; color: var(--ink-2); background: #fff; border: 1px dashed var(--line); border-radius: 12px; padding: 10px 12px; }
+.login .demohint b { color: var(--ink); }
+@media (max-width: 860px) {
+  .login { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  .login .lb { padding: max(28px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 28px max(20px, env(safe-area-inset-left, 0px)); gap: 16px; }
+  .login h2.big2 { font-size: 1.9rem; } .login .lb p { font-size: .98rem; margin-top: 12px; } .login .pills, .login .lf { display: none; }
+  .login .lr { padding: 24px max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); place-items: start center; }
+}
+
+/* ===== extras con candado ===== */
+.lockwrap { position: relative; min-height: 520px; }
+.lockwrap .behind { filter: blur(5px) saturate(.7); opacity: .55; pointer-events: none; user-select: none; }
+.lockcard { position: absolute; inset: 0; display: grid; place-items: start center; padding-top: 48px; }
+.lockcard .lc { width: min(520px, 100%); background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 40px 80px -40px rgba(15,18,32,.45); padding: 26px; display: grid; gap: 14px; }
+.lockcard .ic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: #fff4dc; color: #b77700; }
+.lockcard h2 { font-size: 1.45rem; }
+.lockcard ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: var(--ink-2); }
+.lockcard li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; } .lockcard li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+.lockcard .price { font-family: var(--mono); font-size: .82rem; color: var(--ink-2); }
+/* tu plan */
+.planhead { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; padding: 22px; border-radius: 20px; color: #fff; background: radial-gradient(600px 300px at 0% 0%, rgba(239,59,93,.45), transparent 70%), #0f1220; }
+.planhead b { font-size: 2.4rem; letter-spacing: -0.05em; } .planhead small { color: #b4bacb; display: block; }
+.planhead .tag { background: rgba(255,255,255,.12); color: #fff; }
+.incl10 { list-style: none; margin: 0; padding: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+.incl10 li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; font-size: .93rem; } .incl10 li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+.xgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.xcard { border: 1px solid var(--line); border-radius: var(--r); background: #fff; box-shadow: var(--sh); padding: 18px; display: grid; gap: 10px; align-content: start; }
+.xcard.on { border-color: transparent; background: linear-gradient(#fff, #fff) padding-box, var(--grad) border-box; border: 1.5px solid transparent; }
+.xcard .xh { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.xcard h3 { font-size: 1.05rem; } .xcard p { color: var(--ink-2); font-size: .92rem; }
+@media (max-width: 900px) { .incl10, .xgrid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .menu a[aria-current="page"]::before { display: none; } .bar { position: static; } .plan-badge { display: none; } }
+
+[hidden] { display: none !important; }
+.app { grid-template-columns: 256px minmax(0, 1fr); }
+.side { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2a2e3d transparent; }
+.menu a { font-size: .9rem; padding: 8px 10px; }
+@media (max-width: 760px) { .app { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .login .lb p { display: none; } .login .lb { padding-bottom: 22px; } .login { grid-auto-rows: max-content; } }
+.lockwrap { overflow: hidden; min-width: 0; border-radius: var(--r); }
+.lockwrap .behind { max-width: 100%; overflow: hidden; }
+.lockcard { padding-left: 12px; padding-right: 12px; }
+@media (max-width: 760px) { .menu .msep { display: none; } .lockcard { padding-top: 16px; } .lockwrap { min-height: 600px; } }
+
+.gbrand h2, .gcard h1 { font-family: var(--display); }
+.gate .btn.primary { width: 100%; }
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <aside class="gbrand">
+    <div><a class="logo" href="index.html" aria-label="Bufetea, volver a la web"><svg viewBox="0 0 34 34" aria-hidden="true"><g class="col"><rect x="4" y="17" width="6" height="13" rx="1"/><rect x="2.5" y="14.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="6" y="20" width="2" height="6" rx="1"/></g><g class="col"><rect x="14" y="11" width="6" height="19" rx="1"/><rect x="12.5" y="8.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="16" y="14" width="2" height="9" rx="1"/></g><g class="col"><rect x="24" y="5" width="6" height="25" rx="1"/><rect x="22.5" y="2.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="26" y="8" width="2" height="12" rx="1"/></g><rect class="base" x="1" y="30.4" width="32" height="2.8" rx="1.4"/></svg><span class="word">Bufete<b>a</b></span></a></div>
+    <div><h2>Tus clientes, siempre informados. <em>Tú, sin interrupciones.</em></h2>
+    <p>Conecta Bufetea a tu programa de gestión y deja que el trabajo se haga solo: los recordatorios salen solos, cada novedad llega explicada y el «¿cómo va lo mío?» se responde sin que levantes el teléfono.</p>
+    <div class="gpills"><span>Recordatorios automáticos</span><span>WhatsApp del despacho</span><span>Centralita con IA</span></div></div>
+    <p class="gfoot">© Bufetea · Datos alojados y procesados en la Unión Europea</p>
+  </aside>
+  <div class="gside">
+  <section class="gcard load" id="g-cargando"><div class="spin"></div><p class="mute">Cargando…</p></section>
+  <section class="gcard" id="g-entrar" hidden>
+    <a class="logo" href="index.html" aria-label="Bufetea, volver a la web"><svg viewBox="0 0 34 34" aria-hidden="true"><g class="col"><rect x="4" y="17" width="6" height="13" rx="1"/><rect x="2.5" y="14.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="6" y="20" width="2" height="6" rx="1"/></g><g class="col"><rect x="14" y="11" width="6" height="19" rx="1"/><rect x="12.5" y="8.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="16" y="14" width="2" height="9" rx="1"/></g><g class="col"><rect x="24" y="5" width="6" height="25" rx="1"/><rect x="22.5" y="2.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="26" y="8" width="2" height="12" rx="1"/></g><rect class="base" x="1" y="30.4" width="32" height="2.8" rx="1.4"/></svg><span class="word">Bufete<b>a</b></span></a>
+    <div><h1>Bienvenido de nuevo</h1><p class="mute" style="margin-top:6px">Accede a tu despacho.</p></div>
+    <div class="seg" role="tablist"><button type="button" role="tab" aria-selected="true" data-modo="entrar">Entrar</button><button type="button" role="tab" aria-selected="false" data-modo="crear">Crear cuenta</button></div>
+    <form class="gform" id="f-auth" novalidate>
+      <div class="fld"><label for="a-email">Email</label><input id="a-email" type="email" autocomplete="email" required></div>
+      <div class="fld"><label for="a-pass">Contraseña</label><input id="a-pass" type="password" autocomplete="current-password" minlength="8" required></div>
+      <button class="btn primary" type="submit" id="a-boton">Entrar</button>
+      <p class="gmsg" id="a-msg" role="status" aria-live="polite"></p>
+      <button class="lnk" type="button" id="a-olvido">¿Has olvidado la contraseña?</button>
+    </form>
+  </section>
+  <section class="gcard" id="g-nueva" hidden>
+    <a class="logo" href="index.html" aria-label="Bufetea, volver a la web"><svg viewBox="0 0 34 34" aria-hidden="true"><g class="col"><rect x="4" y="17" width="6" height="13" rx="1"/><rect x="2.5" y="14.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="6" y="20" width="2" height="6" rx="1"/></g><g class="col"><rect x="14" y="11" width="6" height="19" rx="1"/><rect x="12.5" y="8.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="16" y="14" width="2" height="9" rx="1"/></g><g class="col"><rect x="24" y="5" width="6" height="25" rx="1"/><rect x="22.5" y="2.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="26" y="8" width="2" height="12" rx="1"/></g><rect class="base" x="1" y="30.4" width="32" height="2.8" rx="1.4"/></svg><span class="word">Bufete<b>a</b></span></a>
+    <div><h1>Nueva contraseña</h1><p class="mute" style="margin-top:6px">Escribe la contraseña que quieres usar a partir de ahora.</p></div>
+    <form class="gform" id="f-nueva" novalidate>
+      <div class="fld"><label for="n-pass">Contraseña nueva</label><input id="n-pass" type="password" autocomplete="new-password" minlength="8" required></div>
+      <button class="btn primary" type="submit">Guardar contraseña</button>
+      <p class="gmsg" id="n-msg" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="gcard" id="g-despacho" hidden>
+    <a class="logo" href="index.html" aria-label="Bufetea, volver a la web"><svg viewBox="0 0 34 34" aria-hidden="true"><g class="col"><rect x="4" y="17" width="6" height="13" rx="1"/><rect x="2.5" y="14.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="6" y="20" width="2" height="6" rx="1"/></g><g class="col"><rect x="14" y="11" width="6" height="19" rx="1"/><rect x="12.5" y="8.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="16" y="14" width="2" height="9" rx="1"/></g><g class="col"><rect x="24" y="5" width="6" height="25" rx="1"/><rect x="22.5" y="2.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="26" y="8" width="2" height="12" rx="1"/></g><rect class="base" x="1" y="30.4" width="32" height="2.8" rx="1.4"/></svg><span class="word">Bufete<b>a</b></span></a>
+    <div><h1>Crea tu despacho</h1><p class="mute" style="margin-top:6px">Solo una vez. Serás la persona administradora y podrás conectar tu programa de gestión.</p></div>
+    <form class="gform" id="f-despacho" novalidate>
+      <div class="fld"><label for="d-nombre">Nombre del despacho</label><input id="d-nombre" autocomplete="organization" required placeholder="Martín Abogados"></div>
+      <div class="fld"><label for="d-yo">Tu nombre</label><input id="d-yo" autocomplete="name" placeholder="Lucía Martín"></div>
+      <button class="btn primary" type="submit" id="d-boton">Crear despacho</button>
+      <p class="gmsg" id="d-msg" role="status" aria-live="polite"></p>
+      <button class="lnk" type="button" id="d-salir">Entrar con otra cuenta</button>
+    </form>
+  </section>
+  </div>
+</div>
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <a class="logo" href="index.html" aria-label="Bufetea, volver a la web"><svg viewBox="0 0 34 34" aria-hidden="true"><g class="col"><rect x="4" y="17" width="6" height="13" rx="1"/><rect x="2.5" y="14.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="6" y="20" width="2" height="6" rx="1"/></g><g class="col"><rect x="14" y="11" width="6" height="19" rx="1"/><rect x="12.5" y="8.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="16" y="14" width="2" height="9" rx="1"/></g><g class="col"><rect x="24" y="5" width="6" height="25" rx="1"/><rect x="22.5" y="2.6" width="9" height="2.6" rx="1.2" class="cap"/><rect class="win" x="26" y="8" width="2" height="12" rx="1"/></g><rect class="base" x="1" y="30.4" width="32" height="2.8" rx="1.4"/></svg><span class="word">Bufete<b>a</b></span></a>
+    <nav class="menu" aria-label="Secciones">
+      <a href="#hoy" data-v="hoy">Hoy</a>
+      <span class="msep">Tu despacho</span>
+      <a href="#asuntos" data-v="asuntos">Asuntos</a>
+      <a href="#clientes" data-v="clientes">Clientes</a>
+      <a href="#agenda" data-v="agenda">Agenda</a>
+      <a href="#avisos" data-v="avisos">Avisos al cliente <span class="count" id="c-avi"></span></a>
+      <a href="#sin-noticias" data-v="sin-noticias">Clientes sin noticias</a>
+      <a href="#indice" data-v="indice">Índice y sello</a>
+      <a href="#llamadas" data-v="llamadas">Centralita</a>
+      <a href="#sofia" data-v="sofia">Probar la centralita</a>
+      <a href="#conexiones" data-v="conexiones">Conexiones</a>
+      <span class="msep">Módulos · ejemplo</span>
+      <a href="#novedades" data-v="novedades">Notificaciones <span class="count" id="c-nov"></span></a>
+      <a href="#whatsapp" data-v="whatsapp">WhatsApp <span class="count" id="c-wa"></span></a>
+      <a href="#consultas" data-v="consultas">Clientes nuevos <span class="count" id="c-con"></span></a>
+      <span class="msep">Extras · ejemplo</span>
+      <a href="#portal" data-v="portal">Portal del cliente</a>
+      <a href="#documentos" data-v="documentos">Documentos y firma</a>
+      <a href="#cobros" data-v="cobros">Cobro de provisiones</a>
+    </nav>
+    <div class="foot"><b id="f-despacho" style="color:#eef1f7;font-size:.9rem"></b><span>Los módulos marcados como ejemplo usan datos inventados.</span><a href="index.html">Volver a la web</a></div>
+  </aside>
+  <div class="main">
+    <header class="bar"><h1 id="vt">Hoy</h1><div class="who"><span class="n" id="u-nombre"></span><span class="avatar" aria-hidden="true" id="av"></span><button class="btn ghost sm" type="button" id="salir">Salir</button></div></header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function () {
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+
+  var asuntos = [
+    { id: "412/2026", cliente: "Lucía Martín Sáez", asunto: "Reclamación de cantidad a Construcciones Levante", tipo: "Civil", abogado: "Elena Ortega", fase: "Demanda presentada", dias: 18, informa: true },
+    { id: "233/2026", cliente: "Andrés Molina Paz", asunto: "Despido improcedente", tipo: "Laboral", abogado: "Javier Ruiz", fase: "Esperando señalamiento", dias: 12, informa: true },
+    { id: "145/2026", cliente: "Rosa Jiménez Llamas", asunto: "Desahucio por impago de rentas", tipo: "Civil", abogado: "Marta Gil", fase: "Lanzamiento señalado", dias: 3, informa: true },
+    { id: "517/2025", cliente: "Grupo Huertas, S.L.", asunto: "Recurso de apelación", tipo: "Civil", abogado: "Elena Ortega", fase: "Esperando sentencia de la Audiencia", dias: 41, informa: true },
+    { id: "377/2026", cliente: "Inmaculada Ferrer Gil", asunto: "Herencia y partición", tipo: "Civil", abogado: "Marta Gil", fase: "Esperando certificado de últimas voluntades", dias: 35, informa: true },
+    { id: "301/2026", cliente: "Pedro Navarro Ruiz", asunto: "Reclamación por accidente de tráfico", tipo: "Civil", abogado: "Javier Ruiz", fase: "Peritaje pendiente", dias: 6, informa: true },
+    { id: "88/2026", cliente: "Carmen Ibáñez Roca", asunto: "Divorcio de mutuo acuerdo", tipo: "Familia", abogado: "Marta Gil", fase: "Pendiente de ratificación", dias: 9, informa: false },
+    { id: "610/2026", cliente: "Tomás Alcaraz Vidal", asunto: "Diligencias previas", tipo: "Penal", abogado: "Javier Ruiz", fase: "Instrucción", dias: 4, informa: false }
+  ];
+
+  var novedades = [
+    { id: "n1", hora: "09:14", asunto: "412/2026", doc: "Decreto",
+      texto: "Se admite a trámite la demanda presentada por el procurador Sr. Gálvez en nombre de D.ª Lucía Martín Sáez frente a Construcciones Levante, S.L. Dese traslado de la misma a la parte demandada, emplazándola para que la conteste en el plazo de veinte días hábiles, con los apercibimientos legales.",
+      resumen: "Demanda admitida. Emplazada la demandada para contestar en 20 días hábiles.",
+      borrador: "Hola, Lucía. El juzgado ha admitido su demanda. Ahora la constructora tiene 20 días hábiles para contestar. Usted no tiene que hacer nada: le avisaremos en cuanto haya novedades.\n\nUn saludo,\nElena Ortega",
+      plazo: { que: "Contestación de la demandada", cuando: "1 dic 2026", tipo: "Seguimiento" }, estado: "pendiente", fase: "Admitida, esperando contestación" },
+    { id: "n2", hora: "09:31", asunto: "233/2026", doc: "Diligencia de ordenación",
+      texto: "Se señala para la celebración de los actos de conciliación y, en su caso, juicio el día 14 de enero de 2027, a las 10:20 horas, en la Sala de Vistas n.º 3 de este Juzgado de lo Social n.º 2. Cítese a las partes, con la advertencia de que la incomparecencia injustificada del demandante supondrá tenerle por desistido de su demanda.",
+      resumen: "Conciliación y juicio el 14/01/2027 a las 10:20, sala 3. Advertencia de desistimiento si no comparece el actor.",
+      borrador: "Hola, Andrés. Ya hay fecha para su juicio: el 14 de enero a las 10:20, en el Juzgado de lo Social n.º 2 de Murcia, sala 3. Es importante que venga ese día. Javier le llamará antes para preparar juntos el juicio.\n\nUn saludo,\nJavier Ruiz",
+      plazo: { que: "Conciliación y juicio", cuando: "14 ene 2027 · 10:20", tipo: "Vista" }, estado: "pendiente", fase: "Juicio señalado el 14 de enero" },
+    { id: "n3", hora: "10:02", asunto: "145/2026", doc: "Diligencia de ordenación",
+      texto: "No constando que la parte demandada haya desalojado voluntariamente el inmueble, se mantiene la fecha señalada para la práctica de la diligencia de lanzamiento el día 2 de diciembre de 2026, a las 11:00 horas, debiendo la parte actora facilitar los medios necesarios para su práctica.",
+      resumen: "Se mantiene el lanzamiento: 02/12/2026 a las 11:00. La actora debe facilitar medios (cerrajero).",
+      borrador: "Hola, Rosa. Se mantiene el lanzamiento: el 2 de diciembre a las 11:00 recuperará la vivienda. Ese día hará falta un cerrajero; Marta le llamará esta semana para organizarlo todo.\n\nUn saludo,\nMarta Gil",
+      plazo: { que: "Diligencia de lanzamiento", cuando: "2 dic 2026 · 11:00", tipo: "Señalamiento" }, estado: "pendiente", fase: "Lanzamiento el 2 de diciembre" },
+    { id: "n4", hora: "10:47", asunto: "610/2026", doc: "Auto",
+      texto: "Se acuerda recibir declaración en calidad de investigado a D. Tomás Alcaraz Vidal, citándole para el día 27 de noviembre de 2026 a las 9:30 horas, debiendo comparecer asistido de letrado.",
+      resumen: "Citación como investigado el 27/11/2026 a las 9:30, con letrado.",
+      borrador: "", plazo: { que: "Declaración como investigado", cuando: "27 nov 2026 · 9:30", tipo: "Señalamiento" }, estado: "pendiente", fase: "Citado a declarar el 27 de noviembre" }
+  ];
+
+  var llamadas = [
+    { id: "l1", hora: "10:40", quien: "Lucía Martín Sáez", asunto: "412/2026", ver: "Verificada con código", tipo: "Cliente", dur: "2:10",
+      resumen: "Preguntó cómo iba su demanda. Se le contó lo último aprobado: demanda admitida y 20 días hábiles para que conteste la constructora.",
+      tr: [["c", "Hola, quería saber cómo va lo mío con la constructora."], ["s", "Claro. Para confirmar que es usted, ¿me dice su código de cliente?"], ["c", "Es el 4821."], ["s", "Gracias, Lucía. El juzgado admitió su demanda y la constructora tiene 20 días hábiles para contestar. Elena le avisará en cuanto conteste."]] },
+    { id: "l2", hora: "11:25", quien: "Número desconocido", asunto: "233/2026", ver: "No verificado", tipo: "Tercero", dur: "1:05",
+      resumen: "Dice ser hermano de Andrés Molina y pregunta la fecha del juicio. No se le dio ningún dato. Pide que Javier le llame.",
+      tr: [["c", "Llamo por mi hermano, Andrés Molina. ¿Cuándo es su juicio?"], ["s", "Solo puedo hablar del asunto con el propio cliente. Si quiere, tomo nota para que Javier le llame, y Andrés puede autorizarle."], ["c", "Vale, que me llame."]] },
+    { id: "l3", hora: "13:05", quien: "Raúl Ortiz Campos", asunto: "Nuevo", ver: "Posible cliente", tipo: "Primera consulta", dur: "3:40", urgente: true,
+      resumen: "Despido. Recibió la carta el 28 de octubre. Marcado como urgente por plazo de caducidad (20 días hábiles). Cita: mañana a las 9:30 con Javier Ruiz.",
+      tr: [["c", "Me han despedido y quería ver si puedo reclamar."], ["s", "Lo siento. ¿Cuándo le entregaron la carta de despido?"], ["c", "El 28 de octubre."], ["s", "En los despidos los plazos son cortos, así que lo marco como urgente. Le doy cita mañana a las 9:30 con Javier Ruiz. Traiga la carta y sus últimas nóminas."]] },
+    { id: "l4", hora: "16:50", quien: "Inmaculada Ferrer Gil", asunto: "377/2026", ver: "Verificada con código", tipo: "Cliente", dur: "1:50",
+      resumen: "Preguntó por la herencia. El último mensaje aprobado tiene 35 días. Se le dijo que Marta le llamará y se creó una tarea.",
+      tr: [["c", "¿Hay novedades de la herencia de mi padre?"], ["s", "Lo último es que estamos esperando el certificado de últimas voluntades. Le pido a Marta que le llame para darle más detalle."]] },
+    { id: "l5", hora: "21:50", quien: "Madre de Tomás Alcaraz", asunto: "610/2026", ver: "No es el cliente", tipo: "Urgencia", dur: "1:20", urgente: true,
+      resumen: "Informa de que Tomás ha sido detenido. No se dio información del asunto. Aviso urgente enviado a Javier Ruiz (guardia) a las 21:51.",
+      tr: [["c", "Han detenido a mi hijo, Tomás Alcaraz. Es cliente vuestro."], ["s", "Entiendo. No puedo darle datos de su asunto, pero aviso ahora mismo al abogado de guardia. ¿A qué teléfono le llama?"], ["c", "A este mismo."], ["s", "Hecho. Javier Ruiz tiene ya su número y lo que me ha contado."]] }
+  ];
+
+  var tr = {
+    n1: { en: "Hello Lucía. The court has accepted your claim. The construction company now has 20 working days to respond. You don't need to do anything: we'll let you know as soon as there is news.\n\nBest regards,\nElena Ortega", ro: "Bună, Lucía. Instanța v-a admis cererea. Firma de construcții are acum 20 de zile lucrătoare să răspundă. Nu trebuie să faceți nimic: vă anunțăm imediat ce apar noutăți.\n\nCu stimă,\nElena Ortega", fr: "Bonjour Lucía. Le tribunal a accepté votre demande. L'entreprise a maintenant 20 jours ouvrables pour répondre. Vous n'avez rien à faire : nous vous préviendrons dès qu'il y aura du nouveau.\n\nCordialement,\nElena Ortega" },
+    n2: { en: "Hello Andrés. Your trial now has a date: 14 January at 10:20, at Employment Court no. 2 in Murcia, room 3. It's important that you attend. Javier will call you beforehand to prepare it together.\n\nBest regards,\nJavier Ruiz", ro: "Bună, Andrés. Procesul are dată: 14 ianuarie, ora 10:20, la Tribunalul de Muncă nr. 2 din Murcia, sala 3. Este important să veniți. Javier vă va suna înainte ca să vă pregătiți împreună.\n\nCu stimă,\nJavier Ruiz", fr: "Bonjour Andrés. Votre procès a une date : le 14 janvier à 10h20, au Tribunal du travail n° 2 de Murcie, salle 3. Il est important que vous veniez. Javier vous appellera avant pour le préparer ensemble.\n\nCordialement,\nJavier Ruiz" },
+    n3: { en: "Hello Rosa. The eviction goes ahead: on 2 December at 11:00 you will recover the property. A locksmith will be needed that day; Marta will call you this week to organise everything.\n\nBest regards,\nMarta Gil", ro: "Bună, Rosa. Evacuarea se menține: pe 2 decembrie, ora 11:00, veți recupera locuința. În acea zi va fi nevoie de un lăcătuș; Marta vă va suna săptămâna aceasta ca să organizăm totul.\n\nCu stimă,\nMarta Gil", fr: "Bonjour Rosa. L'expulsion est maintenue : le 2 décembre à 11h00, vous récupérerez le logement. Un serrurier sera nécessaire ce jour-là ; Marta vous appellera cette semaine pour tout organiser.\n\nCordialement,\nMarta Gil" }
+  };
+  var LN = { es: "Español", en: "English", ro: "Română", fr: "Français" };
+  var role = "abogada";
+
+  var consultas = [
+    { id: "q1", hora: "21:42", via: "Llamada · centralita", quien: "Raúl Ortiz Campos", tema: "Despido", urg: true, idioma: "es", res: "Recibió la carta de despido el 28 de octubre. Plazo corto: marcado como urgente.", cita: "Mañana 9:30 con Javier Ruiz", estado: "Cita propuesta" },
+    { id: "q2", hora: "08:12", via: "WhatsApp", quien: "+34 6·· ··· 902", tema: "Arrendamiento · fianza", urg: false, idioma: "es", res: "El casero no le devuelve la fianza de 1.200 € tras dejar el piso en septiembre.", cita: "Jueves 17:00 con Marta Gil", estado: "Cita propuesta" },
+    { id: "q3", hora: "07:30", via: "WhatsApp · en inglés", quien: "James Whitaker", tema: "Herencia · bienes en España", urg: false, idioma: "en", res: "Ciudadano británico. Su madre falleció con un piso en Torrevieja. Quiere saber cómo aceptar la herencia.", cita: "Viernes 10:00 con Marta Gil (videollamada)", estado: "Cita propuesta" }
+  ];
+  var avisos = [
+    { id: "a1", tipo: "Preparación del juicio", quien: "Andrés Molina Paz", asunto: "233/2026", cuando: "7 ene (una semana antes) y 13 ene (víspera)", msg: "Hola, Andrés. Le recordamos su juicio el 14 de enero a las 10:20 en el Juzgado de lo Social n.º 2 (sala 3). Traiga su DNI, la carta de despido y sus últimas nóminas. Primero habrá un intento de acuerdo con la empresa; si no hay acuerdo, se celebrará el juicio. Llegue 20 minutos antes. Javier estará con usted.", ok: false },
+    { id: "a2", tipo: "Preparación del juicio", quien: "Rosa Jiménez Llamas", asunto: "145/2026", cuando: "25 nov y 1 dic (víspera)", msg: "Hola, Rosa. El 2 de diciembre a las 11:00 es el lanzamiento. Venga con su DNI y las llaves que tenga; el cerrajero está avisado. Marta estará allí con usted.", ok: false },
+    { id: "a3", tipo: "Cierre con reseña", quien: "Pedro Navarro Ruiz", asunto: "301/2026", cuando: "Al cerrar el asunto", msg: "Hola, Pedro. Su asunto ha terminado: la aseguradora le ha pagado la indemnización acordada. Ha sido un placer ayudarle. Si está contento con nuestro trabajo, nos ayudaría mucho que nos dejara una valoración en Google: [enlace]", ok: false }
+  ];
+  var docs = [
+    { quien: "Inmaculada Ferrer Gil", asunto: "377/2026 · Herencia", items: [["DNI", true], ["Certificado de defunción", true], ["Certificado de últimas voluntades", false], ["Escrituras del piso", false]], rec: "Recordatorio enviado ayer · el próximo, el lunes", firma: "Hoja de encargo firmada el 2 oct" },
+    { quien: "Raúl Ortiz Campos", asunto: "Nuevo · Despido", items: [["DNI", false], ["Carta de despido", true], ["Últimas 3 nóminas", false], ["Contrato de trabajo", false]], rec: "Lista enviada por WhatsApp hoy a las 21:44", firma: "Hoja de encargo enviada para firmar · pendiente" }
+  ];
+  var cobros = [
+    { quien: "Grupo Huertas, S.L.", concepto: "Provisión · recurso de apelación", imp: 1500, dias: 21, estado: "pendiente" },
+    { quien: "Rosa Jiménez Llamas", concepto: "Provisión · lanzamiento", imp: 400, dias: 9, estado: "pendiente" },
+    { quien: "Lucía Martín Sáez", concepto: "Provisión inicial · demanda", imp: 800, dias: 0, estado: "pagado" },
+    { quien: "Pedro Navarro Ruiz", concepto: "Minuta final", imp: 950, dias: 3, estado: "pendiente" }
+  ];
+
+  var sel = { novedades: "n1", llamadas: "l1", consultas: "q1" };
+  var view = document.getElementById("view"), vt = document.getElementById("vt");
+  var byId = function (id) { return asuntos.filter(function (a) { return a.id === id; })[0]; };
+  var pendientes = function () { return novedades.filter(function (n) { return n.estado === "pendiente"; }); };
+
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(function () { t.hidden = true; }, 4200);
+  }
+  function counts() {
+    var p = pendientes().length, q = consultas.filter(function (x) { return x.estado !== "Cita confirmada"; }).length;
+    document.getElementById("c-nov").textContent = p || "";
+    document.getElementById("c-con").textContent = q || "";
+    var w = (typeof chats !== "undefined") ? chats.reduce(function (a, c) { return a + c.unread; }, 0) : 0; var cw = document.getElementById("c-wa"); if (cw) cw.textContent = w || "";
+  }
+
+  /* ---------- Hoy ---------- */
+  function vHoy() {
+    var sin = asuntos.filter(function (a) { return a.informa && a.dias >= 30; });
+    var p = pendientes();
+    view.innerHTML =
+      '<div class="stats">' +
+        '<div class="stat hl"><b>' + p.length + '</b><span>Novedades por revisar</span></div>' +
+        '<div class="stat"><b>' + consultas.length + '</b><span>Clientes nuevos con cita propuesta</span></div>' +
+        '<div class="stat"><b>' + indice() + ' %</b><span>Índice de cliente informado</span></div>' +
+        '<div class="stat"><b>' + sin.length + '</b><span>Clientes sin noticias +30 días</span></div>' +
+      '</div>' +
+      '<div class="cols">' +
+        '<div class="panel"><h2>Para contar a tus clientes <a href="#novedades">Ver todas</a></h2>' +
+          (p.length ? p.map(function (n) { var a = byId(n.asunto); return '<button class="row" data-go="novedades" data-id="' + n.id + '"><span class="t">' + n.hora + '</span><span><b>' + esc(a.cliente) + '</b><span class="d">' + esc(n.doc) + ' · ' + esc(n.resumen) + '</span></span>' + (a.informa ? '<span class="tag green">Borrador listo</span>' : '<span class="tag warn">' + esc(a.tipo) + '</span>') + '</button>'; }).join("") : '<p class="empty">Todo contado. No hay novedades pendientes.</p>') +
+        '</div>' +
+        '<div style="display:grid;gap:18px">' +
+          '<div class="panel"><h2>Clientes nuevos <a href="#consultas">Ver todos</a></h2>' +
+            consultas.map(function (q) { return '<button class="row" data-go="consultas" data-id="' + q.id + '"><span class="t">' + q.hora + '</span><span><b>' + esc(q.quien) + '</b><span class="d">' + esc(q.via) + ' · ' + esc(q.tema) + '</span></span>' + (q.urg ? '<span class="tag warn">Urgente</span>' : '<span class="tag green">' + esc(q.estado) + '</span>') + '</button>'; }).join("") +
+          '</div>' +
+          '<div class="panel"><h2>Llamadas de la centralita <a href="#llamadas">Ver todas</a></h2>' +
+            llamadas.slice(0, 3).map(function (l) { return '<button class="row" data-go="llamadas" data-id="' + l.id + '"><span class="t">' + l.hora + '</span><span><b>' + esc(l.quien) + '</b><span class="d">' + esc(l.resumen) + '</span></span>' + (l.urgente ? '<span class="tag warn">Urgente</span>' : '<span class="tag">' + esc(l.tipo) + '</span>') + '</button>'; }).join("") +
+          '</div>' +
+          '<div class="panel"><h2>Clientes sin noticias</h2>' +
+            sin.map(function (a) { return '<button class="row" data-go="sin-noticias"><span class="t late">' + a.dias + ' d</span><span><b>' + esc(a.cliente) + '</b><span class="d">' + esc(a.asunto) + '</span></span><span class="tag warn">Contarle algo</span></button>'; }).join("") +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  /* ---------- Novedades ---------- */
+  function vNovedades() {
+    var n = novedades.filter(function (x) { return x.id === sel.novedades; })[0] || novedades[0];
+    var a = byId(n.asunto);
+    var list = novedades.map(function (x) {
+      var b = byId(x.asunto);
+      var tag = x.estado === "aprobada" ? '<span class="tag green">Enviada</span>' : x.estado === "archivada" ? '<span class="tag">Archivada</span>' : (b.informa ? '<span class="tag green">Por aprobar</span>' : '<span class="tag warn">' + esc(b.tipo) + '</span>');
+      return '<button class="row" role="option" aria-selected="' + (x.id === n.id) + '" data-id="' + x.id + '"><span class="t">' + x.hora + '</span><span><b>' + esc(b.cliente) + '</b><span class="d">' + esc(x.doc) + ' · ' + esc(x.asunto) + '</span></span>' + tag + '</button>';
+    }).join("");
+    var right;
+    var head = '<div class="dhead"><div><span class="lbl">' + esc(n.doc) + ' · ' + esc(n.asunto) + ' · ' + esc(a.abogado) + '</span><h2>' + esc(a.cliente) + '</h2><p class="mute">' + esc(a.asunto) + '</p></div><span class="tag">' + esc(a.tipo) + '</span></div>';
+    var court = '<div><span class="lbl">Lo que dice el juzgado</span><div class="court">' + esc(n.texto) + '</div></div>';
+    var resumen = '<div><span class="lbl">Resumen para el abogado</span><p>' + esc(n.resumen) + '</p></div>';
+    var lang = n.lang || "es";
+    var plazo = n.plazo.tipo === "Vista" || n.plazo.tipo === "Señalamiento" ? '<div class="plazo"><span><b>Preparación del juicio:</b> ' + esc(n.plazo.que) + ' · ' + esc(n.plazo.cuando) + '. Al aprobar, Bufetea programa los avisos de la semana antes y la víspera.</span></div>' : '';
+    if (!a.informa) {
+      right = head + court + resumen + plazo +
+        '<div class="excluded"><b>Este asunto es de ' + esc(a.tipo.toLowerCase()) + '.</b> Tu despacho ha decidido no informar de estos asuntos de forma automática, así que Bufetea no prepara mensaje ni Sofía cuenta nada. Cuéntaselo tú directamente.</div>' +
+        (n.estado === "pendiente" ? '<div class="actions"><button class="btn ghost sm" id="arch">Marcar como revisada</button></div>' : '<div class="done">Revisada.</div>');
+    } else if (n.estado === "aprobada") {
+      right = head + court + '<div><span class="lbl">Mensaje enviado al cliente · ' + esc(n.enviado) + '</span><div class="bubble" style="white-space:pre-line">' + esc(n.borrador) + '</div></div>' + plazo + '<div class="done">Aprobado por ' + esc(a.abogado) + '. Si pregunta por WhatsApp o por teléfono, Bufetea le contará esto. <span class="note">(Demo: en la versión real se enviaría por WhatsApp.)</span></div>';
+    } else if (n.estado === "archivada") {
+      right = head + court + resumen + '<div class="done">Has decidido no contárselo al cliente.</div>';
+    } else {
+      var txt = lang === "es" ? n.borrador : ((tr[n.id] || {})[lang] || n.borrador);
+      right = head + '<div class="two">' + court + '<div><label class="lbl" for="msg">Mensaje para el cliente · puedes editarlo</label><div class="langs" style="margin-bottom:8px"><span class="note">Idioma del cliente:</span>' + Object.keys(LN).map(function (k) { return '<button type="button" data-l="' + k + '" aria-pressed="' + (k === lang) + '">' + LN[k] + '</button>'; }).join("") + '</div><textarea id="msg">' + esc(txt) + '</textarea></div></div>' + resumen + plazo +
+        '<div class="actions">' + (role === "abogada" ? '<button class="btn primary sm" id="ok">Aprobar y enviar por WhatsApp</button>' : '<button class="btn primary sm" id="ok">Enviar a Elena para aprobar</button>') + '<button class="btn link" id="arch">No contárselo</button></div>' + (role === "admin" ? '<p class="note">Como administrativa puedes preparar el mensaje. Los avisos con contenido jurídico los aprueba un abogado.</p>' : '') +
+        '<p class="note">Fase que verá el cliente si pregunta: «' + esc(n.fase) + '».</p>';
+    }
+    view.innerHTML = '<div class="split"><div class="panel" role="listbox" aria-label="Novedades">' + list + '</div><div class="detail">' + right + '</div></div>';
+    view.querySelectorAll(".row").forEach(function (r) { r.addEventListener("click", function () { sel.novedades = r.dataset.id; render(); }); });
+    var ok = document.getElementById("ok"), ar = document.getElementById("arch"), va = document.getElementById("val");
+    view.querySelectorAll(".langs [data-l]").forEach(function (b) { b.addEventListener("click", function () { n.lang = b.dataset.l; render(); }); });
+    if (ok && role === "admin") { ok.addEventListener("click", function () { toast("Enviado a Elena Ortega para su aprobación."); }); ok = null; }
+    if (ok) ok.addEventListener("click", function () {
+      n.borrador = document.getElementById("msg").value.trim() || n.borrador;
+      n.estado = "aprobada"; n.enviado = "hoy, " + new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      a.dias = 0; a.fase = n.fase;
+      var next = pendientes()[0]; if (next) sel.novedades = next.id;
+      counts(); render();
+      toast("Mensaje aprobado para " + a.cliente.split(" ")[0] + ". En la demo no se envía nada.");
+    });
+    if (ar) ar.addEventListener("click", function () { n.estado = "archivada"; var next = pendientes()[0]; if (next) sel.novedades = next.id; counts(); render(); toast("Novedad revisada."); });
+  }
+  function indice() { var inf = asuntos.filter(function (a) { return a.informa; }); return Math.round(100 * inf.filter(function (a) { return a.dias < 30; }).length / inf.length); }
+
+  /* ---------- Llamadas ---------- */
+  function vLlamadas() {
+    var l = llamadas.filter(function (x) { return x.id === sel.llamadas; })[0] || llamadas[0];
+    var list = llamadas.map(function (x) { return '<button class="row" role="option" aria-selected="' + (x.id === l.id) + '" data-id="' + x.id + '"><span class="t">' + x.hora + '</span><span><b>' + esc(x.quien) + '</b><span class="d">' + esc(x.tipo) + ' · ' + esc(x.asunto) + '</span></span>' + (x.urgente ? '<span class="tag warn">Urgente</span>' : '<span class="tag">' + esc(x.dur) + '</span>') + '</button>'; }).join("");
+    var verTag = /Verificada/.test(l.ver) ? "green" : "warn";
+    view.innerHTML = '<div class="split"><div class="panel" role="listbox" aria-label="Llamadas">' + list + '</div><div class="detail">' +
+      '<div class="dhead"><div><span class="lbl">Llamada · ' + l.hora + ' · ' + l.dur + ' min</span><h2>' + esc(l.quien) + '</h2></div><span class="tag ' + verTag + '">' + esc(l.ver) + '</span></div>' +
+      '<div><span class="lbl">Resumen</span><p>' + esc(l.resumen) + '</p></div>' +
+      '<dl class="kv"><dt>Asunto</dt><dd>' + esc(l.asunto) + '</dd><dt>Tipo</dt><dd>' + esc(l.tipo) + '</dd></dl>' +
+      '<div><span class="lbl">Transcripción</span><div class="transcript">' + l.tr.map(function (m) { return '<div class="m ' + (m[0] === "s" ? "s" : "") + '"><small>' + (m[0] === "s" ? "Sofía" : esc(l.quien)) + '</small><p>' + esc(m[1]) + '</p></div>'; }).join("") + '</div></div>' +
+      '<p class="note">Sofía avisa al empezar de que es un asistente con inteligencia artificial y de que la llamada se graba.</p>' +
+    '</div></div>';
+    view.querySelectorAll(".row").forEach(function (r) { r.addEventListener("click", function () { sel.llamadas = r.dataset.id; render(); }); });
+  }
+
+  /* ---------- Asuntos ---------- */
+  function vAsuntos() {
+    var rows = asuntos.slice().sort(function (x, y) { return y.dias - x.dias; }).map(function (a) {
+      var aviso = !a.informa ? '<span class="tag warn">No se informa · ' + esc(a.tipo) + '</span>' : a.dias === 0 ? '<span class="tag green">Hoy</span>' : '<span class="' + (a.dias >= 30 ? "late" : "") + '">Hace ' + a.dias + ' días</span>';
+      return '<tr><td><b>' + esc(a.cliente) + '</b><span class="d">' + esc(a.id) + '</span></td><td>' + esc(a.asunto) + '<span class="d">' + esc(a.tipo) + '</span></td><td>' + esc(a.fase) + '</td><td>' + esc(a.abogado) + '</td><td>' + aviso + '</td></tr>';
+    }).join("");
+    view.innerHTML = '<p class="mute">La columna «Último aviso al cliente» te dice a quién llevas tiempo sin contarle nada. Bufetea lee los asuntos de tu programa; no escribe en él.</p>' +
+      '<div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Asunto</th><th>Fase que ve el cliente</th><th>Abogado</th><th>Último aviso al cliente</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  /* ---------- Probar a Sofía ---------- */
+  var escenarios = [
+    { id: "a", t: "Soy Lucía y pregunto cómo va lo mío", d: "Cliente verificado",
+      pasos: [["s", "Hola, ha llamado a Ortega & Ruiz Abogados. Le atiende Sofía, el asistente con inteligencia artificial del despacho. La llamada se graba. ¿En qué le ayudo?"], ["u", "Quería saber cómo va mi demanda contra la constructora."], ["s", "Claro. Para confirmar que es usted, ¿me dice su código de cliente?"], ["u", "Es el 4821."], ["x", "Identidad verificada: Lucía Martín · Asunto 412/2026"], ["s", "Gracias, Lucía. Lo último es esto: el juzgado admitió su demanda y la constructora tiene 20 días hábiles para contestar. Usted no tiene que hacer nada. Elena le avisará en cuanto conteste."], ["u", "Perfecto, gracias."], ["x", "Llamada registrada en el asunto 412/2026"]] },
+    { id: "b", t: "Llamo por mi hermano, que es cliente", d: "Alguien que no es el cliente",
+      pasos: [["s", "Hola, ha llamado a Ortega & Ruiz Abogados. Le atiende Sofía, el asistente con inteligencia artificial del despacho. La llamada se graba. ¿En qué le ayudo?"], ["u", "Llamo por mi hermano, Andrés Molina. ¿Cuándo es su juicio?"], ["s", "Para hablar de un asunto necesito confirmar que hablo con el cliente. ¿Tiene su código de cliente?"], ["u", "No, soy su hermano."], ["x!", "Sin verificar: no se da ningún dato del asunto"], ["s", "Entonces no puedo darle información del asunto. Si quiere, apunto su teléfono para que Javier Ruiz le llame, y Andrés puede autorizarle a hablar con usted."], ["u", "Vale, apúntelo."], ["x", "Tarea creada para Javier Ruiz"]] },
+    { id: "c", t: "Pregunto si voy a ganar", d: "Pregunta que solo puede contestar el abogado",
+      pasos: [["s", "Gracias, Lucía, ya he confirmado que es usted. ¿Qué quería saber?"], ["u", "¿Usted cree que vamos a ganar el juicio?"], ["s", "Eso solo se lo puede decir Elena, que conoce su caso. Yo puedo contarle en qué punto está y darle cita con ella. ¿Le viene bien el jueves a las 17:00?"], ["u", "Sí, el jueves me va bien."], ["x", "Cita creada: jueves 17:00 con Elena Ortega"]] },
+    { id: "d", t: "Me han despedido y quiero reclamar", d: "Posible cliente con un plazo corriendo",
+      pasos: [["s", "Hola, ha llamado a Ortega & Ruiz Abogados. Le atiende Sofía, el asistente con inteligencia artificial del despacho. La llamada se graba. ¿En qué le ayudo?"], ["u", "Me han despedido y quería saber si puedo reclamar."], ["s", "Lo siento. ¿Cuándo le entregaron la carta de despido?"], ["u", "El 28 de octubre."], ["x!", "Urgente: despido con plazo corto · aviso a Javier Ruiz"], ["s", "En los despidos los plazos son cortos, así que lo marco como urgente. Le doy cita mañana a las 9:30 con Javier Ruiz. Traiga la carta y sus últimas nóminas. ¿Me dice su nombre?"], ["u", "Raúl Ortiz."], ["x", "Primera consulta creada para mañana a las 9:30"]] }
+  ];
+  var simTimer = null;
+  function vSofia() {
+    view.innerHTML = '<div class="sim"><div class="scen" aria-label="Situaciones">' +
+      '<p class="mute">Elige una situación y responde como si fueras quien llama. Así contesta Sofía con las reglas del despacho.</p>' +
+      escenarios.map(function (e) { return '<button aria-pressed="false" data-e="' + e.id + '"><b>' + esc(e.t) + '</b><span>' + esc(e.d) + '</span></button>'; }).join("") +
+      '</div><div class="chat"><div class="ch"><b>Llamada de prueba</b><span class="tag">Demo</span></div><div class="log" id="log"><p class="sys">Elige una situación para empezar.</p></div><div class="reply" id="reply"></div></div></div>';
+    view.querySelectorAll("button[data-e]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        view.querySelectorAll("button[data-e]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        play(escenarios.filter(function (e) { return e.id === b.dataset.e; })[0]);
+      });
+    });
+  }
+  function play(e) {
+    clearTimeout(simTimer);
+    var log = document.getElementById("log"), reply = document.getElementById("reply"), i = 0;
+    log.innerHTML = ""; reply.innerHTML = "";
+    function add(cls, who, text) {
+      var d = document.createElement("div");
+      if (cls === "sys" || cls === "sys warn") { d.className = cls; d.textContent = text; }
+      else { d.className = "m " + cls; d.innerHTML = "<small>" + who + "</small><p>" + esc(text) + "</p>"; }
+      log.appendChild(d);
+    }
+    function step() {
+      if (!document.getElementById("log")) return;
+      if (i >= e.pasos.length) { reply.innerHTML = '<button class="btn ghost sm" id="again">Repetir</button>'; document.getElementById("again").addEventListener("click", function () { play(e); }); return; }
+      var p = e.pasos[i];
+      if (p[0] === "u") {
+        reply.innerHTML = ""; var b = document.createElement("button"); b.className = "btn primary sm"; b.textContent = "Responder: «" + p[1] + "»";
+        b.addEventListener("click", function () { add("u", "Tú", p[1]); reply.innerHTML = ""; i++; simTimer = setTimeout(step, 450); });
+        reply.appendChild(b); b.focus({ preventScroll: true }); return;
+      }
+      if (p[0] === "s") add("s", "Sofía", p[1]);
+      else add(p[0] === "x!" ? "sys warn" : "sys", "", p[1]);
+      i++; simTimer = setTimeout(step, p[0] === "s" ? 700 : 450);
+    }
+    step();
+  }
+
+
+  /* ---------- WhatsApp ---------- */
+  var chats = [
+    { id: "w1", c: "Lucía Martín Sáez", asunto: "412/2026", unread: 2, msgs: [["i", "Buenos días. Me ha llegado esto de la constructora por burofax.", "07:45"], ["a", "Burofax_Construcciones_Levante.jpg", "07:45"], ["i", "🎤 Nota de voz (0:48) · «Dicen que no van a pagar las facturas de octubre y que reclame si quiero.»", "07:47"]],
+      sug: "Buenos días, Lucía. Recibido el burofax. Elena lo revisa hoy y le llamamos antes de las 13:00 para contarle cómo afecta a su demanda." },
+    { id: "w2", c: "+34 6·· ··· 902", asunto: "Sin ficha", unread: 1, msgs: [["i", "Hola, ¿lleváis temas de alquileres? El casero no me devuelve la fianza.", "08:12"]],
+      sug: "Hola. Sí, llevamos asuntos de arrendamiento. ¿Nos dice su nombre y le damos cita para una primera consulta esta semana?" },
+    { id: "w3", c: "Andrés Molina Paz", asunto: "233/2026", unread: 0, msgs: [["o", "Hola, Andrés. Ya hay fecha para su juicio: el 14 de enero a las 10:20. Javier le llamará antes para prepararlo.", "ayer"], ["i", "Perfecto, gracias. ¿Tengo que llevar algo?", "ayer"]],
+      sug: "Traiga su DNI, la carta de despido y sus últimas nóminas. Javier le confirmará el resto en la reunión previa." }
+  ];
+  var selChat = "w1";
+  function vWhatsapp() {
+    var ch = chats.filter(function (x) { return x.id === selChat; })[0];
+    ch.unread = 0; counts();
+    var list = chats.map(function (x) { return '<button class="row" role="option" aria-selected="' + (x.id === ch.id) + '" data-id="' + x.id + '"><span class="t">' + esc(x.msgs[x.msgs.length - 1][2]) + '</span><span><b>' + esc(x.c) + '</b><span class="d">' + esc(x.msgs[x.msgs.length - 1][1]) + '</span></span>' + (x.unread ? '<span class="count">' + x.unread + '</span>' : '<span class="tag">' + esc(x.asunto) + '</span>') + '</button>'; }).join("");
+    var msgs = ch.msgs.map(function (m) {
+      if (m[0] === "a") return '<div class="mm"><span class="att">📎 ' + esc(m[1]) + '</span><small>' + m[2] + ' · reconocido como burofax</small></div>';
+      return '<div class="mm' + (m[0] === "o" ? " o" : "") + '">' + esc(m[1]) + '<small>' + m[2] + '</small></div>';
+    }).join("");
+    view.innerHTML = '<div class="wa"><div class="panel" role="listbox" aria-label="Conversaciones">' + list + '</div><div class="thread"><div class="th"><b>' + esc(ch.c) + '</b><span class="tag ' + (ch.asunto === "Sin ficha" ? "warn" : "") + '">' + (ch.asunto === "Sin ficha" ? "Sin ficha · vincular" : "Asunto " + esc(ch.asunto)) + '</span><button class="btn ghost sm" id="save">Guardar en el asunto</button></div><div class="msgs">' + msgs + '</div><div class="compose"><label class="lbl" for="wa-msg">Respuesta propuesta por la IA · revísala antes de enviar</label><textarea id="wa-msg">' + esc(ch.sug) + '</textarea><div class="actions"><button class="btn primary sm" id="send">Enviar</button></div></div></div></div>';
+    view.querySelectorAll(".row").forEach(function (r) { r.addEventListener("click", function () { selChat = r.dataset.id; render(); }); });
+    document.getElementById("send").addEventListener("click", function () { var t = document.getElementById("wa-msg").value.trim(); if (!t) return; ch.msgs.push(["o", t, "ahora"]); ch.sug = ""; render(); toast("Respuesta añadida a la conversación. En la demo no se envía nada."); });
+    document.getElementById("save").addEventListener("click", function () { toast(ch.asunto === "Sin ficha" ? "Conversación guardada como «Cliente por confirmar» en Asuntos." : "Conversación y documentos guardados en el asunto " + ch.asunto + "."); });
+  }
+
+  /* ---------- Clientes nuevos ---------- */
+  function vConsultas() {
+    var q = consultas.filter(function (x) { return x.id === sel.consultas; })[0] || consultas[0];
+    var list = consultas.map(function (x) { return '<button class="row" role="option" aria-selected="' + (x.id === q.id) + '" data-id="' + x.id + '"><span class="t">' + x.hora + '</span><span><b>' + esc(x.quien) + '</b><span class="d">' + esc(x.via) + ' · ' + esc(x.tema) + '</span></span>' + (x.urg ? '<span class="tag warn">Urgente</span>' : '<span class="tag ' + (x.estado === "Cita confirmada" ? "green" : "") + '">' + esc(x.estado) + '</span>') + '</button>'; }).join("");
+    view.innerHTML = '<p class="mute">Las consultas nuevas que llegan por WhatsApp o por la centralita, a cualquier hora. Bufetea recoge el caso, lo resume y propone cita. Nunca da consejo jurídico.</p><div class="split"><div class="panel" role="listbox" aria-label="Clientes nuevos">' + list + '</div><div class="detail">' +
+      '<div class="dhead"><div><span class="lbl">' + esc(q.via) + ' · ' + q.hora + '</span><h2>' + esc(q.quien) + '</h2><p class="mute">' + esc(q.tema) + '</p></div>' + (q.urg ? '<span class="tag warn">Urgente</span>' : '') + '</div>' +
+      '<div><span class="lbl">Resumen del caso</span><p>' + esc(q.res) + '</p></div>' +
+      '<dl class="kv"><dt>Cita propuesta</dt><dd>' + esc(q.cita) + '</dd><dt>Idioma</dt><dd>' + LN[q.idioma] + '</dd></dl>' +
+      (q.estado === "Cita confirmada" ? '<div class="done">Cita confirmada. El cliente ha recibido la confirmación' + (q.idioma !== "es" ? " en " + LN[q.idioma].toLowerCase() : "") + ' y la lista de documentos que debe traer.</div>' : '<div class="actions"><button class="btn primary sm" id="conf">Confirmar cita</button><button class="btn link" id="otra">Proponer otra hora</button></div>') +
+    '</div></div>';
+    view.querySelectorAll(".row").forEach(function (r) { r.addEventListener("click", function () { sel.consultas = r.dataset.id; render(); }); });
+    var c = document.getElementById("conf"); if (c) c.addEventListener("click", function () { q.estado = "Cita confirmada"; q.urg = false; counts(); render(); toast("Cita confirmada con " + q.quien.split(" ")[0] + ". En la demo no se envía nada."); });
+    var o = document.getElementById("otra"); if (o) o.addEventListener("click", function () { toast("Elige otra hora en tu agenda y Bufetea se la propone al cliente."); });
+  }
+
+  /* ---------- Avisos programados ---------- */
+  function vAvisos() {
+    view.innerHTML = '<p class="mute">Preparación del juicio y cierre con reseña. Cada aviso sale solo en su fecha, cuando lo has aprobado una vez.</p><div class="grid2">' + avisos.map(function (a) {
+      return '<div class="panel"><h2>' + esc(a.tipo) + '<span class="tag ' + (a.ok ? "green" : "") + '">' + (a.ok ? "Programado" : "Por aprobar") + '</span></h2><div style="padding:16px;display:grid;gap:10px"><b>' + esc(a.quien) + ' · ' + esc(a.asunto) + '</b><span class="note">Se enviará: ' + esc(a.cuando) + '</span><div class="bubble">' + esc(a.msg) + '</div>' + (a.ok ? '' : '<div class="actions"><button class="btn primary sm" data-a="' + a.id + '">' + (role === "admin" && a.tipo !== "Cierre con reseña" ? "Programar" : "Aprobar y programar") + '</button></div>') + '</div></div>';
+    }).join("") + '</div>';
+    view.querySelectorAll("[data-a]").forEach(function (b) { b.addEventListener("click", function () { avisos.filter(function (x) { return x.id === b.dataset.a; })[0].ok = true; render(); toast("Aviso programado. En la demo no se envía nada."); }); });
+  }
+
+  /* ---------- Índice y sello ---------- */
+  function vIndice() {
+    var v = indice(), inf = asuntos.filter(function (a) { return a.informa; }), al = inf.filter(function (a) { return a.dias < 30; }).length;
+    view.innerHTML = '<div class="grid2"><div class="panel"><h2>Índice de cliente informado · noviembre</h2><div style="padding:18px;display:grid;gap:14px"><div class="big">' + v + ' %</div><div class="meter"><i style="width:' + v + '%"></i></div><p>' + al + ' de ' + inf.length + ' clientes han tenido noticias en los últimos 30 días.</p><dl class="kv"><dt>Tiempo medio de la notificación al cliente</dt><dd>3 h 20 min</dd><dt>«¿Cómo va lo mío?» este mes</dt><dd>9 · todas respondidas por Bufetea</dd><dt>Asuntos excluidos (penal, familia)</dt><dd>' + (asuntos.length - inf.length) + '</dd></dl></div></div>' +
+      '<div class="panel"><h2>Sello «Despacho que informa»</h2><div style="padding:18px;display:grid;gap:14px"><div class="seal"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="4" y="17" width="6" height="13" rx="1" fill="#b4233c"/><rect x="14" y="11" width="6" height="19" rx="1" fill="#b4233c"/><rect x="24" y="5" width="6" height="25" rx="1" fill="#b4233c"/><rect x="1" y="30.4" width="32" height="2.8" rx="1.4" fill="#b4233c"/></svg><span><b>Despacho que informa</b><small>Ortega &amp; Ruiz Abogados · Bufetea</small></span></div><p>' + (v >= 85 ? 'Cumples el requisito (85 % o más). Puedes mostrar el sello en tu web y al pie de tus mensajes.' : 'Te falta poco: el sello se activa con un índice del 85 % o más. Escribe a los clientes sin noticias y lo conseguirás.') + '</p><div class="actions"><button class="btn ghost sm" id="sin">Ver clientes sin noticias</button></div></div></div></div>';
+    document.getElementById("sin").addEventListener("click", function () { location.hash = "sin-noticias"; });
+  }
+
+  /* ---------- Portal del cliente (extra) ---------- */
+  function vPortal() {
+    view.innerHTML = '<div class="grid2"><div style="display:grid;gap:12px;align-content:start"><span class="tag">Extra</span><h2>Así ve Lucía su asunto</h2><p class="mute">Con la marca de tu despacho. Muestra el mapa del procedimiento y la última novedad que aprobaste. Entra con su DNI y un código que le llega al móvil.</p></div>' +
+      '<div class="ph"><div class="pt"><small>Ortega &amp; Ruiz Abogados</small><b>Reclamación 412/2026</b></div><div class="pb"><b>Cómo va su asunto</b>' +
+      [["d", "Primera consulta · 28 sep"], ["d", "Demanda presentada · 21 oct"], ["d", "Demanda admitida · 3 nov"], ["c", "Ahora: la constructora tiene 20 días hábiles para contestar"], ["", "Audiencia previa"], ["", "Juicio"], ["", "Sentencia"]].map(function (f) { return '<div class="fase ' + f[0] + '"><i></i><span>' + esc(f[1]) + '</span></div>'; }).join("") +
+      '<div class="bubble">Última novedad: el juzgado ha aceptado su demanda. No tiene que hacer nada.</div><dl class="kv"><dt>Documentos</dt><dd>Todo entregado</dd><dt>Provisión</dt><dd>800 € · pagada</dd></dl></div></div></div>';
+  }
+
+  /* ---------- Documentos y firma (extra) ---------- */
+  function vDocumentos() {
+    view.innerHTML = '<p class="mute">Extra. Bufetea pide por WhatsApp los documentos que faltan, los reconoce cuando llegan y recuerda lo pendiente.</p><div class="grid2">' + docs.map(function (d, i) {
+      return '<div class="panel"><h2>' + esc(d.quien) + '<span class="tag">' + esc(d.asunto) + '</span></h2><div style="padding:16px;display:grid;gap:12px"><div class="chk">' + d.items.map(function (it) { return '<div class="' + (it[1] ? "ok" : "") + '"><i></i>' + esc(it[0]) + (it[1] ? ' <span class="note">· recibido por WhatsApp</span>' : '') + '</div>'; }).join("") + '</div><span class="note">' + esc(d.rec) + '</span><span class="note"><b>Firma:</b> ' + esc(d.firma) + '</span><div class="actions"><button class="btn ghost sm" data-r="' + i + '">Recordar ahora</button></div></div></div>';
+    }).join("") + '</div>';
+    view.querySelectorAll("[data-r]").forEach(function (b) { b.addEventListener("click", function () { toast("Recordatorio preparado para " + docs[+b.dataset.r].quien.split(" ")[0] + ". En la demo no se envía nada."); }); });
+  }
+
+  /* ---------- Cobro de provisiones (extra) ---------- */
+  function vCobros() {
+    var pend = cobros.filter(function (c) { return c.estado !== "pagado"; }).reduce(function (s, c) { return s + c.imp; }, 0);
+    view.innerHTML = '<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat hl"><b>' + pend.toLocaleString("es-ES") + ' €</b><span>Pendiente de cobro</span></div><div class="stat"><b>800 €</b><span>Cobrado este mes con Bufetea</span></div><div class="stat"><b>2,4 días</b><span>Tiempo medio de pago tras el aviso</span></div></div>' +
+      '<div class="tablewrap" style="margin-top:18px"><table><thead><tr><th>Cliente</th><th>Concepto</th><th>Importe</th><th>Estado</th><th></th></tr></thead><tbody>' + cobros.map(function (c, i) {
+        return '<tr><td><b>' + esc(c.quien) + '</b></td><td>' + esc(c.concepto) + '</td><td>' + c.imp.toLocaleString("es-ES") + ' €</td><td>' + (c.estado === "pagado" ? '<span class="tag green">Pagado</span>' : c.estado === "avisado" ? '<span class="tag">Aviso enviado</span>' : '<span class="' + (c.dias > 14 ? "late" : "") + '">Pendiente · ' + c.dias + ' días</span>') + '</td><td>' + (c.estado === "pendiente" ? '<button class="btn ghost sm" data-c="' + i + '">Enviar enlace de pago</button>' : '') + '</td></tr>';
+      }).join("") + '</tbody></table></div><p class="note" style="margin-top:12px">Extra. El cliente paga con tarjeta o Bizum a través de una pasarela de pago regulada; el dinero va directo a tu cuenta y Bufetea no guarda datos de tarjeta.</p>';
+    view.querySelectorAll("[data-c]").forEach(function (b) { b.addEventListener("click", function () { cobros[+b.dataset.c].estado = "avisado"; render(); toast("Recordatorio con enlace de pago preparado. En la demo no se envía nada."); }); });
+  }
+
+  /* ================= DATOS REALES: cuenta, despacho y Clio (Supabase) ================= */
+  var SUPA_URL = "https://vblceecvhdhdxqtodvmg.supabase.co";
+  var SUPA_KEY = "sb_publishable_6kaNZc5ASYBotWzYzQ1PsQ_O_AuGzTQ";
+  var FN = SUPA_URL + "/functions/v1/clio";
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  var real = { perfil: null, uid: null, despacho: "", firma: "", emailRespuesta: "", integ: null, asuntos: [], clientes: [], agenda: [], mensajes: [], noticias: [], llamadas: [], selLlamada: null, cargado: false, q: "", rapido: 0, timer: null, recuperando: false, modo: "entrar", confirmando: false, vista: "", pinta: null, selAviso: null, nuevo: null, editando: false };
+  var $ = function (id) { return document.getElementById(id); };
+  var REALES = { hoy: 1, asuntos: 1, clientes: 1, agenda: 1, conexiones: 1, avisos: 1, "sin-noticias": 1, indice: 1, llamadas: 1, sofia: 1 };
+  var EJEMPLOS = { novedades: 1, whatsapp: 1, consultas: 1, portal: 1, documentos: 1, cobros: 1 };
+  var AGENTE_ID = "agent_9801m6hnz6hnerbr3axj07dpgdrr";
+  var EST = { Open: ["Abierto", "green"], Pending: ["Pendiente", "warn"], Closed: ["Cerrado", ""] };
+
+  function pantalla(v) {
+    ["cargando", "entrar", "nueva", "despacho"].forEach(function (x) { $("g-" + x).hidden = x !== v; });
+    $("gate").hidden = !v; $("app").hidden = !!v;
+  }
+  function gmsg(id, t, tipo) { var e = $(id); e.textContent = t || ""; e.className = "gmsg" + (tipo ? " " + tipo : ""); }
+  function norm(x) { return String(x || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function iniciales(n) { var p = String(n || "").replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean); return ((p[0] || "?")[0] + (p[1] ? p[1][0] : "")).toUpperCase(); }
+  function hace(iso) {
+    if (!iso) return "nunca";
+    var sg = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+    if (sg < 60) return "hace un momento";
+    if (sg < 3600) return "hace " + Math.round(sg / 60) + " min";
+    if (sg < 86400) return "hace " + Math.round(sg / 3600) + " h";
+    return new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  }
+  function fechaCorta(iso) { if (!iso) return "—"; var d = new Date(iso.length === 10 ? iso + "T00:00:00" : iso); return d.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }); }
+  function conectado() { return !!real.integ && (real.integ.estado === "conectada" || real.integ.estado === "error"); }
+  function importando() { return conectado() && real.integ.sync_en_curso && !real.integ.ultima_sync; }
+  function traducirError(m) {
+    m = String(m || "");
+    if (/Invalid login credentials/i.test(m)) return "Email o contraseña incorrectos.";
+    if (/Email not confirmed/i.test(m)) return "Aún no has confirmado tu email. Revisa tu bandeja de entrada.";
+    if (/already registered/i.test(m)) return "Ya hay una cuenta con este email. Entra con tu contraseña.";
+    if (/Password should be at least/i.test(m)) return "La contraseña debe tener al menos 8 caracteres.";
+    if (/rate limit|too many/i.test(m)) return "Demasiados intentos seguidos. Espera unos minutos.";
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "Sin conexión. Comprueba tu internet.";
+    return m || "Algo ha fallado. Inténtalo de nuevo.";
+  }
+  async function llamar(ruta, cuerpo) {
+    var ses = (await sb.auth.getSession()).data.session;
+    if (!ses) throw new Error("Tu sesión ha caducado. Vuelve a entrar.");
+    var r = await fetch(ruta.charAt(0) === "/" ? SUPA_URL + "/functions/v1" + ruta : FN + "/" + ruta, { method: "POST", headers: { "Content-Type": "application/json", apikey: SUPA_KEY, Authorization: "Bearer " + ses.access_token }, body: JSON.stringify(cuerpo || {}) });
+    var j = {}; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error(j.error || ("Error " + r.status));
+    return j;
+  }
+  function banner(v) {
+    return '<div class="ej"><span class="tag warn">Ejemplo</span><span>' + (v === "hoy"
+      ? "<b>Debajo, así será tu día con todos los módulos activos.</b> Son datos inventados: las notificaciones explicadas, el WhatsApp y la centralita aún no están activos en tu despacho."
+      : "<b>Este módulo aún no está activo en tu despacho.</b> Los datos son inventados para que veas cómo funcionará. No se envía nada a nadie.") + "</span></div>";
+  }
+
+  /* ---------- arranque y sesión ---------- */
+  async function iniciar() {
+    if (real.recuperando) { pantalla("nueva"); return; }
+    var ses = (await sb.auth.getSession()).data.session;
+    if (!ses) { pantalla("entrar"); return; }
+    var p = await sb.from("perfiles").select("despacho_id, rol, nombre").eq("id", ses.user.id).maybeSingle();
+    if (p.error) { pantalla("entrar"); gmsg("a-msg", traducirError(p.error.message), "err"); return; }
+    if (!p.data) { pantalla("despacho"); return; }
+    real.perfil = p.data; real.uid = ses.user.id;
+    role = p.data.rol === "administrativo" ? "admin" : "abogada";
+    var d = await sb.from("despachos").select("nombre, firma, email_respuesta, envio_auto").eq("id", p.data.despacho_id).maybeSingle();
+    real.despacho = d.data ? d.data.nombre : "Tu despacho";
+    real.firma = (d.data && d.data.firma) || ""; real.envioAuto = (d.data && d.data.envio_auto) || []; real.emailRespuesta = (d.data && d.data.email_respuesta) || "";
+    var nombre = p.data.nombre || ses.user.email;
+    $("u-nombre").textContent = nombre; $("av").textContent = iniciales(nombre); $("f-despacho").textContent = real.despacho;
+    pantalla(null);
+    leerParametro();
+    render();
+    await cargarReal();
+  }
+  function leerParametro() {
+    var u = new URL(location.href), v = u.searchParams.get("clio");
+    if (!v) return;
+    if (v === "conectado") { toast("Clio conectado. Estamos importando tus datos…"); real.rapido = Date.now() + 120000; }
+    else if (v === "cancelado") toast("Has cancelado la conexión con Clio.");
+    else toast("No se ha podido conectar con Clio. Inténtalo de nuevo.");
+    u.searchParams.delete("clio");
+    history.replaceState(null, "", u.pathname + (u.search || "") + "#conexiones");
+  }
+
+  /* ---------- datos ---------- */
+  async function cargarReal() {
+    clearTimeout(real.timer);
+    if (!real.perfil) return;
+    try {
+      var hoy0 = new Date(); hoy0.setHours(0, 0, 0, 0);
+      var r = await Promise.all([
+        sb.from("integraciones").select("*").eq("proveedor", "clio").maybeSingle(),
+        sb.from("asuntos").select("id, numero, descripcion, estado, abogado, area, fecha_apertura, cliente_id, clientes(nombre)").eq("eliminado", false).order("fecha_apertura", { ascending: false, nullsFirst: false }).limit(2000),
+        sb.from("clientes").select("id, nombre, tipo, email, telefono, codigo").eq("eliminado", false).order("nombre").limit(3000),
+        sb.from("agenda").select("id, titulo, inicio, fin, todo_el_dia, lugar, asuntos(numero, descripcion)").eq("eliminado", false).gte("inicio", hoy0.toISOString()).order("inicio").limit(500),
+        sb.from("mensajes").select("*").neq("estado", "cancelado").order("creado_en", { ascending: false }).limit(400),
+        sb.from("asuntos_noticias").select("*").limit(3000),
+        sb.from("llamadas").select("*").order("creado_en", { ascending: false }).limit(200)
+      ]);
+      for (var i = 0; i < r.length; i++) if (r[i].error) throw r[i].error;
+      real.integ = r[0].data; real.asuntos = r[1].data || []; real.clientes = r[2].data || []; real.agenda = r[3].data || [];
+      real.mensajes = r[4].data || []; real.noticias = r[5].data || []; real.llamadas = r[6].data || [];
+      contarAvisos();
+      real.cargado = true;
+      refrescarVista();
+    } catch (e) {
+      if (/jwt|session/i.test(String(e.message))) { await sb.auth.signOut(); return; }
+      toast("No se han podido cargar tus datos: " + traducirError(e.message));
+    } finally { programar(); }
+  }
+  function programar() {
+    clearTimeout(real.timer);
+    if (!real.perfil) return;
+    var rapido = (real.integ && real.integ.sync_en_curso) || Date.now() < real.rapido;
+    real.timer = setTimeout(cargarReal, rapido ? 4000 : 30000);
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && real.perfil) cargarReal(); });
+  function refrescarVista() {
+    var v = current();
+    if (!REALES[v]) return;
+    if (v === "conexiones") { if (!real.confirmando && !real.editando) pintarClio(); return; }
+    if (v === "avisos") { if (!real.editando) pintarAvisos(); return; }
+    if (v === "sofia") return; // no recargar el widget en mitad de una llamada
+    if (v === "llamadas") { pintarLlamadas(); return; }
+    if ((v === "asuntos" || v === "clientes" || v === "agenda") && $("r-lista") && real.pinta) { real.pinta(); return; }
+    var y = window.scrollY; render(); window.scrollTo(0, y);
+  }
+
+  /* ---------- Hoy (real arriba, ejemplo debajo) ---------- */
+  function filaCita(e) {
+    var d = new Date(e.inicio);
+    var dia = d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+    var hora = e.todo_el_dia ? "Todo el día" : d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    var extra = [hora, e.asuntos ? [e.asuntos.numero, e.asuntos.descripcion].filter(Boolean).join(" · ") : null, e.lugar].filter(Boolean).join(" · ");
+    return '<div class="row"><span class="t">' + esc(dia) + '</span><span><b>' + esc(e.titulo || "Cita") + '</b><span class="d">' + esc(extra) + '</span></span><span class="tag">' + esc(d.toLocaleDateString("es-ES", { weekday: "short" })) + '</span></div>';
+  }
+  function stat(n, t, hl) { return '<div class="stat' + (hl ? " hl" : "") + '"><b>' + esc(n) + '</b><span>' + esc(t) + '</span></div>'; }
+  function vHoyReal() {
+    vHoy();
+    var cab;
+    if (!real.cargado) cab = '<p class="empty">Cargando tus datos…</p>';
+    else if (!conectado()) {
+      cab = '<div class="panel"><h2>Tu despacho <span class="tag">Sin conectar</span></h2><div class="conn"><div class="connh"><span class="clio-logo">clio</span><div><p>Conecta tu programa de gestión y Bufetea traerá tus clientes, asuntos y agenda. Bufetea solo lee: no cambia nada en tu programa.</p></div></div><div class="actions"><a class="btn primary sm" href="#conexiones">Conectar mi programa</a></div></div></div>';
+    } else {
+      var abiertos = real.asuntos.filter(function (a) { return a.estado !== "Closed"; }).length;
+      var semana = Date.now() + 7 * 864e5;
+      var citas = real.agenda.filter(function (e) { return new Date(e.inicio).getTime() <= semana; }).length;
+      var porAprobar = real.mensajes.filter(function (m) { return m.estado === "borrador" || m.estado === "error"; });
+      var ind = indiceReal();
+      cab = '<div class="stats">' + stat(porAprobar.length, "Avisos por aprobar", porAprobar.length > 0) + stat(abiertos, "Asuntos abiertos") + stat(citas, "Citas en los próximos 7 días") + stat(ind.total ? ind.valor + " %" : "—", "Índice de cliente informado") + '</div>' +
+        '<div class="cols"><div class="panel"><h2>Avisos por aprobar <a href="#avisos">Ver todos</a></h2>' + (porAprobar.length ? porAprobar.slice(0, 5).map(filaAviso).join("") : '<p class="empty">Nada pendiente. Bufetea te propondrá aquí los recordatorios de tus próximas citas.</p>') + '</div>' +
+        '<div class="panel"><h2>Próximas citas <a href="#agenda">Ver agenda</a></h2>' + (real.agenda.length ? real.agenda.slice(0, 5).map(filaCita).join("") : '<p class="empty">' + (importando() ? "Importando tu agenda de Clio…" : "No tienes citas próximas en tu agenda de Clio.") + '</p>') + '</div>' +
+        (real.llamadas.length ? '<div class="panel"><h2>Llamadas de la centralita <a href="#llamadas">Ver todas</a></h2>' + real.llamadas.slice(0, 3).map(function (l) { return '<a class="row" href="#llamadas" style="text-decoration:none"><span class="t">' + esc(new Date(l.creado_en).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })) + '</span><span><b>' + esc(l.nombre || "Sin identificar") + '</b><span class="d">' + esc(l.resumen) + '</span></span>' + (l.urgente ? '<span class="tag warn">Urgente</span>' : '<span class="tag">' + esc(TIPOLL[l.tipo] || "Llamada") + '</span>') + '</a>'; }).join("") + '</div>' : '') + '</div>';
+    }
+    var estado = conectado() ? '<span class="tag green">' + (real.integ.sync_en_curso ? "Sincronizando…" : "Clio conectado") + '</span>' : '';
+    view.insertAdjacentHTML("afterbegin", '<div style="display:grid;gap:18px"><div class="toolbar"><span class="eyebrow">' + esc(real.despacho) + ' · datos reales</span>' + estado + '</div>' + cab + '</div>' + banner("hoy"));
+  }
+
+  /* ---------- Asuntos, Clientes y Agenda (reales) ---------- */
+  var INTRO = {
+    asuntos: "Los asuntos de tu programa de gestión. Bufetea los lee; no escribe en él.",
+    clientes: "Los clientes de tu programa de gestión, con su email y teléfono.",
+    agenda: "Tus próximas citas y señalamientos, tal y como están en tu agenda."
+  };
+  function vacio(tipo, total) {
+    if (!real.cargado) return "Cargando…";
+    if (real.q && total) return "No hay resultados para tu búsqueda.";
+    if (!conectado()) return null;
+    if (importando()) return "Importando desde Clio…";
+    return tipo === "agenda" ? "No tienes citas próximas en tu agenda de Clio." : "Aún no hay " + tipo + " en tu cuenta de Clio.";
+  }
+  function vListaReal(tipo) {
+    view.innerHTML = '<div class="toolbar"><p class="mute">' + INTRO[tipo] + '</p><input class="buscar" id="r-buscar" type="search" placeholder="Buscar…" aria-label="Buscar en ' + tipo + '"></div><div id="r-lista"></div>';
+    var inp = $("r-buscar"); inp.value = real.q;
+    inp.addEventListener("input", function () { real.q = norm(inp.value); real.pinta(); });
+    real.pinta = function () { pintarLista(tipo); };
+    real.pinta();
+  }
+  function pintarLista(tipo) {
+    var L = $("r-lista"); if (!L) return;
+    var q = real.q, filas, html;
+    if (tipo === "asuntos") {
+      filas = real.asuntos.filter(function (a) { return !q || norm([a.numero, a.descripcion, a.clientes && a.clientes.nombre, a.abogado, a.area].join(" ")).indexOf(q) !== -1; });
+      html = '<div class="tablewrap"><table><thead><tr><th>Asunto</th><th>Cliente</th><th>Estado</th><th>Responsable</th><th>Apertura</th><th></th></tr></thead><tbody>' + filas.slice(0, 300).map(function (a) {
+        var e = EST[a.estado] || [a.estado || "—", ""];
+        var c = a.cliente_id ? clienteDe(a.cliente_id) : null;
+        return '<tr><td><b>' + esc(a.descripcion || "Sin descripción") + '</b><span class="d">' + esc([a.numero, a.area].filter(Boolean).join(" · ")) + '</span></td><td>' + esc(a.clientes ? a.clientes.nombre : "—") + '</td><td><span class="tag ' + e[1] + '">' + esc(e[0]) + '</span></td><td>' + esc(a.abogado || "—") + '</td><td>' + esc(fechaCorta(a.fecha_apertura)) + '</td><td><button class="btn ghost sm" type="button" data-escribir="' + esc(a.id) + '"' + (c && c.email ? "" : ' disabled title="El cliente no tiene email en Clio"') + '>Escribir</button></td></tr>';
+      }).join("") + '</tbody></table></div>';
+    } else if (tipo === "clientes") {
+      var cuenta = {}; real.asuntos.forEach(function (a) { if (a.cliente_id) cuenta[a.cliente_id] = (cuenta[a.cliente_id] || 0) + 1; });
+      filas = real.clientes.filter(function (c) { return !q || norm([c.nombre, c.email, c.telefono].join(" ")).indexOf(q) !== -1; });
+      html = '<div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Teléfono</th><th>Asuntos</th><th>Código para llamar</th></tr></thead><tbody>' + filas.slice(0, 300).map(function (c) {
+        return '<tr><td><b>' + esc(c.nombre) + '</b><span class="d">' + (c.tipo === "Company" ? "Empresa" : c.tipo === "Person" ? "Persona" : esc(c.tipo || "")) + '</span></td><td>' + esc(c.email || "—") + '</td><td>' + esc(c.telefono || "—") + '</td><td>' + (cuenta[c.id] || 0) + '</td><td><span class="tag">' + esc(c.codigo || "—") + '</span></td></tr>';
+      }).join("") + '</tbody></table></div>';
+    } else {
+      filas = real.agenda.filter(function (e) { return !q || norm([e.titulo, e.lugar, e.asuntos && e.asuntos.numero, e.asuntos && e.asuntos.descripcion].join(" ")).indexOf(q) !== -1; });
+      html = '<div class="panel">' + filas.slice(0, 300).map(filaCita).join("") + '</div>';
+    }
+    if (!filas.length) {
+      var t = vacio(tipo, real[tipo].length);
+      html = '<div class="panel"><p class="empty">' + (t === null ? 'Conecta tu programa de gestión en <a href="#conexiones">Conexiones</a> y aquí aparecerán tus ' + (tipo === "agenda" ? "próximas citas" : tipo) + '.' : esc(t)) + '</p></div>';
+    }
+    if (filas.length > 300) html += '<p class="note" style="margin-top:10px">Mostrando 300 de ' + filas.length.toLocaleString("es-ES") + '. Usa el buscador para encontrar el resto.</p>';
+    L.innerHTML = html;
+    L.querySelectorAll("[data-escribir]").forEach(function (b) { b.addEventListener("click", function () { abrirNuevo(b.dataset.escribir); }); });
+  }
+  function vAsuntosReal() { vListaReal("asuntos"); }
+  function vClientesReal() { vListaReal("clientes"); }
+  function vAgendaReal() { vListaReal("agenda"); }
+
+  /* ---------- Conexiones ---------- */
+  function vConexiones() {
+    var otros = [["Kleos", "Wolters Kluwer", "En preparación"], ["LexON", "Lefebvre", "Próximamente"], ["Aranzadi Fusión y One", "Aranzadi LA LEY", "Próximamente"], ["Sudespacho, MN y otros", "Varios", "Próximamente"]];
+    view.innerHTML = '<p class="mute">Bufetea se suma al programa de gestión que ya usas: lee tus clientes, asuntos y agenda, y no cambia nada en él.</p>' +
+      '<div class="grid2"><div class="panel" id="clio-panel"></div><div class="panel"><h2>Otros programas</h2>' + otros.map(function (o) { return '<div class="row"><span class="t"></span><span><b>' + esc(o[0]) + '</b><span class="d">' + esc(o[1]) + '</span></span><span class="tag">' + esc(o[2]) + '</span></div>'; }).join("") +
+      '<p class="note" style="padding:12px 16px">¿Usas otro programa? Dínoslo y lo priorizamos.</p></div>' + panelAjustes() + '</div>';
+    pintarClio();
+    enlazarAjustes();
+  }
+  function pintarClio() {
+    var P = $("clio-panel"); if (!P) return;
+    var i = real.integ, admin = real.perfil && real.perfil.rol === "admin", estado = i ? i.estado : "desconectada";
+    var tag, cuerpo, botones = "", aviso = "";
+    if (!real.cargado) { P.innerHTML = '<h2>Clio Manage</h2><p class="empty">Cargando…</p>'; return; }
+    if (estado === "desconectada") {
+      tag = '<span class="tag">Sin conectar</span>';
+      cuerpo = "<p>Conecta tu cuenta de Clio y Bufetea traerá tus clientes, asuntos y agenda, y recibirá los cambios en tiempo real.</p>";
+      botones = admin ? '<button class="btn primary sm" id="k-con" type="button">Conectar con Clio</button>' : '<p class="note">Pide a la persona administradora del despacho que lo conecte.</p>';
+    } else if (estado === "revocada") {
+      tag = '<span class="tag red">Permiso retirado</span>';
+      cuerpo = "<p>Clio ya no permite el acceso de Bufetea. Vuelve a conectar la cuenta para seguir recibiendo cambios.</p>";
+      botones = admin ? '<button class="btn primary sm" id="k-con" type="button">Volver a conectar</button>' : "";
+    } else {
+      var imp = importando();
+      tag = i.sync_en_curso ? '<span class="tag green">' + (imp ? "Importando…" : "Sincronizando…") + '</span>' : estado === "error" ? '<span class="tag warn">Con incidencias</span>' : '<span class="tag green">Conectado</span>';
+      cuerpo = '<dl class="kv"><dt>Cuenta</dt><dd>' + esc(i.usuario_externo || "—") + '</dd><dt>Última sincronización</dt><dd>' + (imp ? "Primera importación en curso" : esc(hace(i.ultima_sync))) + '</dd><dt>Cambios</dt><dd>' + (i.webhooks_activos ? "En tiempo real" : "Cada 10 minutos") + '</dd><dt>Importado</dt><dd>' + real.asuntos.length + " asuntos · " + real.clientes.length + " clientes · " + real.agenda.length + " citas próximas</dd></dl>";
+      if (i.ultimo_error) aviso = '<div class="aviso' + (estado === "error" ? " bad" : "") + '">' + esc(i.ultimo_error) + "</div>";
+      botones = '<button class="btn ghost sm" id="k-sync" type="button"' + (i.sync_en_curso ? " disabled" : "") + ">" + (i.sync_en_curso ? "Sincronizando…" : estado === "error" ? "Reintentar" : "Sincronizar ahora") + "</button>" + (admin ? '<button class="btn danger sm" id="k-des" type="button">Desconectar</button>' : "");
+    }
+    var confirmar = real.confirmando ? '<div class="excluded" style="display:grid;gap:10px"><b>¿Desconectar Clio?</b><span>Bufetea dejará de recibir cambios y se retirará el permiso en Clio. En Clio no se borra nada.</span><label class="chk2"><input type="checkbox" id="k-borrar"> Borrar también de Bufetea los clientes, asuntos y citas importados</label><div class="actions"><button class="btn primary sm" id="k-si" type="button">Sí, desconectar</button><button class="btn link" id="k-no" type="button">Cancelar</button></div></div>' : "";
+    P.innerHTML = "<h2>Clio Manage " + tag + '</h2><div class="conn"><div class="connh"><span class="clio-logo">clio</span><div>' + cuerpo + "</div></div>" + aviso + '<div class="actions">' + botones + "</div>" + confirmar + "</div>";
+    var kc = $("k-con"), ks = $("k-sync"), kd = $("k-des"), ksi = $("k-si"), kno = $("k-no");
+    if (kc) kc.addEventListener("click", async function () {
+      kc.disabled = true; kc.textContent = "Abriendo Clio…";
+      try { var j = await llamar("start", { vuelta: location.origin + location.pathname }); location.href = j.url; }
+      catch (e) { toast(e.message); kc.disabled = false; kc.textContent = "Conectar con Clio"; }
+    });
+    if (ks) ks.addEventListener("click", async function () {
+      ks.disabled = true; ks.textContent = "Sincronizando…";
+      try { await llamar("sync"); real.rapido = Date.now() + 90000; toast("Sincronizando con Clio…"); setTimeout(cargarReal, 1500); }
+      catch (e) { toast(e.message); ks.disabled = false; ks.textContent = "Sincronizar ahora"; }
+    });
+    if (kd) kd.addEventListener("click", function () { real.confirmando = true; pintarClio(); });
+    if (kno) kno.addEventListener("click", function () { real.confirmando = false; pintarClio(); });
+    if (ksi) ksi.addEventListener("click", async function () {
+      ksi.disabled = true; ksi.textContent = "Desconectando…";
+      try { await llamar("disconnect", { borrarDatos: $("k-borrar").checked }); real.confirmando = false; toast("Clio desconectado."); await cargarReal(); pintarClio(); }
+      catch (e) { toast(e.message); ksi.disabled = false; ksi.textContent = "Sí, desconectar"; }
+    });
+  }
+
+  /* ================= AVISOS AL CLIENTE (reales, por email) ================= */
+  var TIPOS = { manual: "Aviso", novedad: "Novedad", recordatorio_semana: "Recordatorio · una semana antes", recordatorio_vispera: "Recordatorio · víspera", cierre: "Cierre del asunto", cobro: "Cobro" };
+  var DIA = 864e5;
+  function puedeAprobar() { return real.perfil && real.perfil.rol !== "administrativo"; }
+  function fechaHora(iso) { return iso ? new Date(iso).toLocaleString("es-ES", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"; }
+  function asuntoDe(id) { return real.asuntos.filter(function (a) { return a.id === id; })[0] || null; }
+  function clienteDe(id) { return real.clientes.filter(function (c) { return c.id === id; })[0] || null; }
+  function contarAvisos() {
+    var n = real.mensajes.filter(function (m) { return m.estado === "borrador" || m.estado === "error"; }).length;
+    var e = $("c-avi"); if (e) e.textContent = n || "";
+  }
+  function indiceReal() {
+    var inf = real.noticias.filter(function (a) { return a.informar && a.estado !== "Closed"; });
+    var al = inf.filter(function (a) { return a.ultimo_aviso && Date.now() - new Date(a.ultimo_aviso).getTime() < 30 * DIA; }).length;
+    return { total: inf.length, al: al, valor: inf.length ? Math.round(100 * al / inf.length) : 0, excluidos: real.noticias.filter(function (a) { return !a.informar; }).length };
+  }
+  function etiquetaAviso(m) {
+    if (m.estado === "error") return '<span class="tag red">No enviado</span>';
+    if (m.estado === "borrador") return m.programado_para && new Date(m.programado_para).getTime() < Date.now() ? '<span class="tag">Fecha pasada</span>' : '<span class="tag warn">Por aprobar</span>';
+    if (m.estado === "programado") return m.auto ? '<span class="tag green">Sale solo</span>' : '<span class="tag">Programado</span>';
+    if (m.estado === "enviando") return '<span class="tag">Enviando…</span>';
+    if (m.estado === "enviado") return '<span class="tag green">Enviado</span>';
+    return '<span class="tag">' + esc(m.estado) + '</span>';
+  }
+  function filaAviso(m) {
+    var c = clienteDe(m.cliente_id), a = asuntoDe(m.asunto_id);
+    var cuando = m.estado === "enviado" ? m.enviado_en : m.programado_para || m.creado_en;
+    var d = new Date(cuando);
+    return '<button class="row" data-aviso="' + esc(m.id) + '" aria-selected="' + (real.selAviso === m.id) + '"><span class="t">' + esc(d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })) + '</span><span><b>' + esc(c ? c.nombre : (m.destinatario || "Sin cliente")) + '</b><span class="d">' + esc(TIPOS[m.tipo] || "Aviso") + ' · ' + esc(m.titulo || (a ? a.descripcion : "")) + '</span></span>' + etiquetaAviso(m) + '</button>';
+  }
+  function plantilla(cliente) {
+    var nombre = cliente ? String(cliente.nombre).split(" ")[0] : "";
+    return "Hola" + (nombre ? ", " + nombre : "") + ".\n\n\n\n" + (cliente && cliente.codigo ? "Si llama al despacho, su código de cliente es " + cliente.codigo + ".\n\n" : "") + "Un saludo,\n" + (real.firma || real.despacho);
+  }
+  function abrirNuevo(asuntoId) {
+    var a = asuntoId ? asuntoDe(asuntoId) : null, c = a && a.cliente_id ? clienteDe(a.cliente_id) : null;
+    real.nuevo = { asunto_id: a ? a.id : "", destinatario: c && c.email ? c.email : "", titulo: a ? "Novedades de su asunto: " + (a.descripcion || a.numero || "") : "", cuerpo: plantilla(c), fase: a && a.fase_cliente ? a.fase_cliente : "" };
+    real.selAviso = null;
+    if (location.hash !== "#avisos") location.hash = "avisos"; else pintarAvisos();
+  }
+  function vAvisosReal() {
+    view.innerHTML = '<div class="toolbar"><p class="mute">Los mensajes que recibe el cliente. Los recordatorios de las citas pueden salir solos (lo eliges en Conexiones); el resto lo apruebas con un toque.</p><button class="btn primary sm" type="button" id="av-nuevo">Nuevo aviso</button></div><div class="split"><div class="panel" id="av-lista" role="listbox" aria-label="Avisos"></div><div class="detail" id="av-detalle"></div></div>';
+    $("av-nuevo").addEventListener("click", function () { abrirNuevo(null); });
+    pintarAvisos();
+  }
+  function grupoAvisos(titulo, lista) {
+    if (!lista.length) return "";
+    return '<span class="lbl" style="padding:12px 16px 4px;margin:0">' + esc(titulo) + ' · ' + lista.length + '</span>' + lista.map(filaAviso).join("");
+  }
+  function pintarAvisos() {
+    var L = $("av-lista"), D = $("av-detalle"); if (!L || !D) return;
+    var ms = real.mensajes;
+    var pend = ms.filter(function (m) { return m.estado === "borrador" || m.estado === "error"; }).sort(function (x, y) { return new Date(x.programado_para || x.creado_en) - new Date(y.programado_para || y.creado_en); });
+    var prog = ms.filter(function (m) { return m.estado === "programado" || m.estado === "enviando"; }).sort(function (x, y) { return new Date(x.programado_para) - new Date(y.programado_para); });
+    var env = ms.filter(function (m) { return m.estado === "enviado"; }).sort(function (x, y) { return new Date(y.enviado_en) - new Date(x.enviado_en); }).slice(0, 60);
+    L.innerHTML = (pend.length + prog.length + env.length) ? grupoAvisos("Por aprobar", pend) + grupoAvisos("Programados", prog) + grupoAvisos("Enviados", env)
+      : '<p class="empty">' + (real.cargado ? "Aún no hay avisos. Pulsa «Nuevo aviso» o espera a que Bufetea proponga los recordatorios de tus citas." : "Cargando…") + '</p>';
+    L.querySelectorAll("[data-aviso]").forEach(function (b) { b.addEventListener("click", function () { real.selAviso = b.dataset.aviso; real.nuevo = null; real.editando = false; pintarAvisos(); }); });
+    if (!real.nuevo && !real.selAviso && pend.length) real.selAviso = pend[0].id;
+    if (real.nuevo) pintarNuevo(D);
+    else {
+      var m = ms.filter(function (x) { return x.id === real.selAviso; })[0];
+      if (m) pintarAviso(D, m); else D.innerHTML = '<p class="mute">Elige un aviso de la lista o crea uno nuevo.</p>';
+    }
+  }
+  function camposAviso(v, conAsunto) {
+    var opciones = real.asuntos.filter(function (a) { return a.estado !== "Closed"; }).map(function (a) {
+      return '<option value="' + esc(a.id) + '"' + (a.id === v.asunto_id ? " selected" : "") + '>' + esc((a.clientes ? a.clientes.nombre + " · " : "") + (a.descripcion || a.numero || "Asunto")) + '</option>';
+    }).join("");
+    return (conAsunto ? '<div class="fld"><label for="f-asunto">Asunto</label><select id="f-asunto" class="buscar" style="width:100%"><option value="">Elige el asunto…</option>' + opciones + '</select></div>' : '') +
+      '<div class="two"><div class="fld"><label for="f-dest">Para (email del cliente)</label><input id="f-dest" type="email" value="' + esc(v.destinatario || "") + '"></div>' +
+      '<div class="fld"><label for="f-fase">Fase que verá el cliente <span class="note">(opcional)</span></label><input id="f-fase" value="' + esc(v.fase || "") + '" placeholder="Ej.: Demanda admitida"></div></div>' +
+      '<div class="fld"><label for="f-tit">Asunto del correo</label><input id="f-tit" value="' + esc(v.titulo || "") + '"></div>' +
+      '<div><label class="lbl" for="f-cuerpo">Mensaje para el cliente · puedes editarlo</label><textarea id="f-cuerpo">' + esc(v.cuerpo || "") + '</textarea></div>';
+  }
+  function leerCampos() {
+    return { destinatario: $("f-dest").value.trim(), fase_cliente: $("f-fase").value.trim() || null, titulo: $("f-tit").value.trim(), cuerpo: $("f-cuerpo").value.trim() };
+  }
+  function marcarEdicion() { ["f-dest", "f-fase", "f-tit", "f-cuerpo"].forEach(function (id) { var e = $(id); if (e) e.addEventListener("input", function () { real.editando = true; }); }); }
+  function pintarNuevo(D) {
+    var v = real.nuevo;
+    D.innerHTML = '<div class="dhead"><div><span class="lbl">Nuevo aviso</span><h2>Escribir al cliente</h2></div></div>' + camposAviso(v, true) +
+      '<div class="actions">' + (puedeAprobar() ? '<button class="btn primary sm" id="f-enviar" type="button">Aprobar y enviar</button>' : '') + '<button class="btn ghost sm" id="f-guardar" type="button">Guardar borrador</button><button class="btn link" id="f-cancelar" type="button">Cancelar</button></div>' +
+      (puedeAprobar() ? '' : '<p class="note">Como administrativa puedes preparar el aviso. Lo aprueba un abogado.</p>');
+    marcarEdicion();
+    $("f-asunto").addEventListener("change", function (e) {
+      var a = asuntoDe(e.target.value), c = a && a.cliente_id ? clienteDe(a.cliente_id) : null;
+      if (c && c.email) $("f-dest").value = c.email;
+      if (a && !$("f-tit").value.trim()) $("f-tit").value = "Novedades de su asunto: " + (a.descripcion || a.numero || "");
+      var cu = $("f-cuerpo"); if (c && /^Hola[.,]/.test(cu.value)) cu.value = cu.value.replace(/^Hola[^.\n]*\./, "Hola, " + String(c.nombre).split(" ")[0] + ".");
+      if (a && a.fase_cliente && !$("f-fase").value) $("f-fase").value = a.fase_cliente;
+      real.editando = true;
+    });
+    $("f-cancelar").addEventListener("click", function () { real.nuevo = null; real.editando = false; pintarAvisos(); });
+    async function crear(enviarYa, boton) {
+      var asunto = $("f-asunto").value, f = leerCampos(), a = asuntoDe(asunto);
+      if (!asunto) { toast("Elige el asunto del cliente."); return; }
+      if (!/^\S+@\S+\.\S+$/.test(f.destinatario)) { toast("Escribe un email válido para el cliente."); return; }
+      var cli = a && a.cliente_id ? clienteDe(a.cliente_id) : null;
+      if (f.cuerpo.replace(/\s/g, "").length < 20 || f.cuerpo.replace(/\s/g, "") === plantilla(cli).replace(/\s/g, "")) { toast("Escribe la novedad para el cliente antes de enviarlo."); return; }
+      boton.disabled = true;
+      var ins = await sb.from("mensajes").insert({ despacho_id: real.perfil.despacho_id, asunto_id: asunto, cliente_id: a ? a.cliente_id : null, tipo: "manual", destinatario: f.destinatario, titulo: f.titulo || "Novedades de su asunto", cuerpo: f.cuerpo, fase_cliente: f.fase_cliente, creado_por: real.uid }).select("id").single();
+      if (ins.error) { boton.disabled = false; toast(traducirError(ins.error.message)); return; }
+      real.nuevo = null; real.editando = false; real.selAviso = ins.data.id;
+      if (enviarYa) await aprobar(ins.data.id, null, boton); else { toast("Borrador guardado."); await cargarReal(); pintarAvisos(); }
+    }
+    var fe = $("f-enviar"); if (fe) fe.addEventListener("click", function () { crear(true, fe); });
+    $("f-guardar").addEventListener("click", function () { crear(false, $("f-guardar")); });
+  }
+  async function aprobar(id, campos, boton, ahora) {
+    if (boton) { boton.disabled = true; boton.textContent = "Enviando…"; }
+    try {
+      if (campos) { var up = await sb.from("mensajes").update({ fase_cliente: campos.fase_cliente, estado: "borrador" }).eq("id", id); if (up.error) throw up.error; }
+      var cuerpo = { id: id, enviarAhora: !!ahora };
+      if (campos) { cuerpo.titulo = campos.titulo; cuerpo.cuerpo = campos.cuerpo; cuerpo.destinatario = campos.destinatario; }
+      var j = await llamar("/mensajes/aprobar", cuerpo);
+      toast(j.estado === "programado" ? "Aviso aprobado. Saldrá el " + fechaHora(j.programado_para) + "." : "Aviso enviado al cliente.");
+    } catch (e) { toast(e.message); }
+    real.editando = false;
+    await cargarReal(); pintarAvisos();
+  }
+  function pintarAviso(D, m) {
+    var c = clienteDe(m.cliente_id), a = asuntoDe(m.asunto_id);
+    var head = '<div class="dhead"><div><span class="lbl">' + esc(TIPOS[m.tipo] || "Aviso") + (a ? ' · ' + esc(a.numero || "") : '') + '</span><h2>' + esc(c ? c.nombre : (m.destinatario || "Cliente")) + '</h2><p class="mute">' + esc(a ? (a.descripcion || "") : "") + '</p></div>' + etiquetaAviso(m) + '</div>';
+    var editable = m.estado === "borrador" || m.estado === "error";
+    if (editable) {
+      var futuro = m.programado_para && new Date(m.programado_para).getTime() > Date.now();
+      var pasado = m.programado_para && !futuro;
+      D.innerHTML = head + (m.estado === "error" ? '<div class="aviso bad">No se ha enviado: ' + esc(m.error || "error desconocido") + '. Revísalo y vuelve a aprobarlo.</div>' : '') +
+        (pasado && m.tipo !== "manual" ? '<div class="excluded">La fecha prevista ya ha pasado (' + esc(fechaHora(m.programado_para)) + '). Si lo apruebas, saldrá ahora.</div>' : '') +
+        camposAviso({ destinatario: m.destinatario, titulo: m.titulo, cuerpo: m.cuerpo, fase: m.fase_cliente }, false) +
+        (futuro ? '<p class="note">Bufetea lo enviará el <b>' + esc(fechaHora(m.programado_para)) + '</b> cuando lo apruebes.</p>' : '') +
+        '<div class="actions">' + (puedeAprobar() ? '<button class="btn primary sm" id="m-ok" type="button">' + (futuro ? "Aprobar y programar" : "Aprobar y enviar") + '</button>' + (futuro ? '<button class="btn ghost sm" id="m-ya" type="button">Enviar ahora</button>' : '') : '') +
+        '<button class="btn ghost sm" id="m-guardar" type="button">Guardar cambios</button><button class="btn link" id="m-descartar" type="button">Descartar</button></div>' +
+        (puedeAprobar() ? '' : '<p class="note">Como administrativa puedes preparar el aviso. Lo aprueba un abogado.</p>');
+      marcarEdicion();
+      var ok = $("m-ok"), ya = $("m-ya");
+      if (ok) ok.addEventListener("click", function () { var f = leerCampos(); if (!/^\S+@\S+\.\S+$/.test(f.destinatario)) { toast("Escribe un email válido para el cliente."); return; } aprobar(m.id, f, ok, false); });
+      if (ya) ya.addEventListener("click", function () { aprobar(m.id, leerCampos(), ya, true); });
+      $("m-guardar").addEventListener("click", async function () {
+        var f = leerCampos();
+        var r = await sb.from("mensajes").update({ destinatario: f.destinatario, titulo: f.titulo, cuerpo: f.cuerpo, fase_cliente: f.fase_cliente, estado: "borrador", actualizado_en: new Date().toISOString() }).eq("id", m.id);
+        if (r.error) { toast(traducirError(r.error.message)); return; }
+        real.editando = false; toast("Cambios guardados."); await cargarReal(); pintarAvisos();
+      });
+      $("m-descartar").addEventListener("click", async function () {
+        var r = await sb.from("mensajes").update({ estado: "cancelado", actualizado_en: new Date().toISOString() }).eq("id", m.id);
+        if (r.error) { toast(traducirError(r.error.message)); return; }
+        real.editando = false; real.selAviso = null; toast("Aviso descartado."); await cargarReal(); pintarAvisos();
+      });
+      return;
+    }
+    var bloque = '<div><span class="lbl">' + (m.estado === "enviado" ? "Enviado el " + esc(fechaHora(m.enviado_en)) + " a " + esc(m.destinatario) : "Se enviará el " + esc(fechaHora(m.programado_para)) + " a " + esc(m.destinatario)) + '</span><div class="bubble" style="white-space:pre-line"><b>' + esc(m.titulo) + '</b>\n\n' + esc(m.cuerpo) + '</div></div>';
+    D.innerHTML = head + bloque + (m.fase_cliente ? '<p class="note">Fase que ve el cliente: «' + esc(m.fase_cliente) + '».</p>' : '') +
+      (m.estado === "programado" && m.auto ? '<p class="note">Sale solo, sin que tengas que hacer nada. Puedes cancelarlo hasta entonces y volverá a «Por aprobar».</p>' : '') +
+      (m.estado === "programado" ? '<div class="actions"><button class="btn ghost sm" id="m-cancelar" type="button">Cancelar el envío</button></div>' : '') +
+      (m.estado === "enviado" ? '<div class="done">Aprobado y enviado por email. Si el cliente responde, le llegará al despacho.</div>' : '');
+    var mc = $("m-cancelar");
+    if (mc) mc.addEventListener("click", async function () {
+      var r = await sb.from("mensajes").update({ estado: "borrador", aprobado_por: null, aprobado_en: null, auto: false, actualizado_en: new Date().toISOString() }).eq("id", m.id);
+      if (r.error) { toast(traducirError(r.error.message)); return; }
+      toast("Envío cancelado. El aviso vuelve a «Por aprobar»."); await cargarReal(); pintarAvisos();
+    });
+  }
+
+  /* ---------- Clientes sin noticias (real) ---------- */
+  function diasSin(a) {
+    var ref = a.ultimo_aviso || a.fecha_apertura;
+    return ref ? Math.max(0, Math.floor((Date.now() - new Date(ref.length === 10 ? ref + "T00:00:00" : ref).getTime()) / DIA)) : null;
+  }
+  function vSinNoticias() {
+    if (!real.cargado) { view.innerHTML = '<p class="empty">Cargando…</p>'; return; }
+    if (!conectado() && !real.noticias.length) { view.innerHTML = '<div class="panel"><p class="empty">Conecta tu programa de gestión en <a href="#conexiones">Conexiones</a> y aquí verás a quién llevas tiempo sin contarle nada.</p></div>'; return; }
+    var inf = real.noticias.filter(function (a) { return a.informar && a.estado !== "Closed"; }).sort(function (x, y) { return (x.ultimo_aviso ? 1 : 0) - (y.ultimo_aviso ? 1 : 0) || (diasSin(y) || 0) - (diasSin(x) || 0); });
+    var excl = real.noticias.filter(function (a) { return !a.informar && a.estado !== "Closed"; });
+    var filas = inf.map(function (a) {
+      var d = diasSin(a);
+      var cuando = a.ultimo_aviso ? '<span class="' + (d >= 30 ? "late" : "") + '">Hace ' + d + ' días</span>' : '<span class="late">Nunca</span><span class="d">Abierto hace ' + (d === null ? "—" : d + " días") + '</span>';
+      return '<tr><td><b>' + esc(a.cliente || "Sin cliente") + '</b><span class="d">' + esc(a.cliente_email || "Sin email") + '</span></td><td>' + esc(a.descripcion || "") + '<span class="d">' + esc([a.numero, a.area].filter(Boolean).join(" · ")) + '</span></td><td>' + esc(a.fase_cliente || "—") + '</td><td>' + cuando + '</td><td style="white-space:nowrap"><button class="btn ghost sm" data-escribir="' + esc(a.asunto_id) + '" type="button"' + (a.cliente_email ? "" : " disabled") + '>Escribir</button> <button class="btn link" data-noinf="' + esc(a.asunto_id) + '" type="button">No informar</button></td></tr>';
+    }).join("");
+    view.innerHTML = '<p class="mute">Los asuntos abiertos ordenados por el tiempo que lleva el cliente sin recibir un aviso tuyo. A partir de 30 días, es el cliente que acaba llamando.</p>' +
+      (inf.length ? '<div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Asunto</th><th>Fase que ve el cliente</th><th>Último aviso</th><th></th></tr></thead><tbody>' + filas + '</tbody></table></div>' : '<div class="panel"><p class="empty">No hay asuntos abiertos de los que informar.</p></div>') +
+      (excl.length ? '<div class="panel"><h2>No se informa automáticamente · ' + excl.length + '</h2>' + excl.map(function (a) { return '<div class="row"><span class="t"></span><span><b>' + esc(a.cliente || "Sin cliente") + '</b><span class="d">' + esc(a.descripcion || "") + '</span></span><button class="btn link" data-inf="' + esc(a.asunto_id) + '" type="button">Volver a informar</button></div>'; }).join("") + '</div>' : '');
+    view.querySelectorAll("[data-escribir]").forEach(function (b) { b.addEventListener("click", function () { abrirNuevo(b.dataset.escribir); }); });
+    function ajustar(id, informar) {
+      sb.rpc("ajustar_asunto", { p_asunto: id, p_informar: informar, p_fase: (real.noticias.filter(function (a) { return a.asunto_id === id; })[0] || {}).fase_cliente || null })
+        .then(function (r) { if (r.error) toast(traducirError(r.error.message)); else { toast(informar ? "Este asunto vuelve a la lista." : "No se propondrán avisos de este asunto."); cargarReal(); } });
+    }
+    view.querySelectorAll("[data-noinf]").forEach(function (b) { b.addEventListener("click", function () { ajustar(b.dataset.noinf, false); }); });
+    view.querySelectorAll("[data-inf]").forEach(function (b) { b.addEventListener("click", function () { ajustar(b.dataset.inf, true); }); });
+  }
+
+  /* ---------- Índice y sello (real) ---------- */
+  function vIndiceReal() {
+    if (!real.cargado) { view.innerHTML = '<p class="empty">Cargando…</p>'; return; }
+    var i = indiceReal(), mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0);
+    var enviadosMes = real.mensajes.filter(function (m) { return m.estado === "enviado" && new Date(m.enviado_en) >= mes; }).length;
+    var nombreMes = new Date().toLocaleDateString("es-ES", { month: "long" });
+    view.innerHTML = '<div class="grid2"><div class="panel"><h2>Índice de cliente informado · ' + esc(nombreMes) + '</h2><div style="padding:18px;display:grid;gap:14px"><div class="big">' + (i.total ? i.valor + " %" : "—") + '</div><div class="meter"><i style="width:' + i.valor + '%"></i></div><p>' + (i.total ? i.al + " de " + i.total + " clientes con asunto abierto han recibido un aviso en los últimos 30 días." : "Cuando tengas asuntos abiertos, aquí verás qué parte de tus clientes está al día.") + '</p><dl class="kv"><dt>Avisos enviados este mes</dt><dd>' + enviadosMes + '</dd><dt>Asuntos que no se informan</dt><dd>' + i.excluidos + '</dd></dl><div class="actions"><a class="btn ghost sm" href="#sin-noticias">Ver clientes sin noticias</a></div></div></div>' +
+      '<div class="panel"><h2>Sello «Despacho que informa»</h2><div style="padding:18px;display:grid;gap:14px"><div class="seal"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="4" y="17" width="6" height="13" rx="1" fill="#b4233c"/><rect x="14" y="11" width="6" height="19" rx="1" fill="#b4233c"/><rect x="24" y="5" width="6" height="25" rx="1" fill="#b4233c"/><rect x="1" y="30.4" width="32" height="2.8" rx="1.4" fill="#b4233c"/></svg><span><b>Despacho que informa</b><small>' + esc(real.despacho) + ' · Bufetea</small></span></div><p>' + (i.total && i.valor >= 85 ? "Cumples el requisito (85 % o más). Puedes mostrar el sello en tu web y al pie de tus mensajes." : "El sello se activa con un índice del 85 % o más. Escribe a los clientes sin noticias para conseguirlo.") + '</p></div></div></div>';
+  }
+
+  /* ================= CENTRALITA (real, modo prueba) ================= */
+  var TIPOLL = { cliente: "Cliente", tercero: "Tercero", consulta_nueva: "Consulta nueva", urgencia: "Urgencia", otro: "Otra" };
+  function vLlamadasReal() {
+    view.innerHTML = '<p class="mute">Las llamadas que ha atendido Sofía, con su resumen. Solo cuenta a cada cliente lo que tú ya le has enviado, y antes le pide su código.</p><div class="split"><div class="panel" id="ll-lista" role="listbox" aria-label="Llamadas"></div><div class="detail" id="ll-detalle"></div></div>';
+    pintarLlamadas();
+  }
+  function pintarLlamadas() {
+    var L = $("ll-lista"), D = $("ll-detalle"); if (!L || !D) return;
+    if (!real.cargado) { L.innerHTML = '<p class="empty">Cargando…</p>'; D.innerHTML = ""; return; }
+    var ls = real.llamadas || [];
+    if (!ls.length) {
+      L.innerHTML = '<p class="empty">Aún no hay llamadas.</p>';
+      D.innerHTML = '<h2>Sin llamadas todavía</h2><p class="mute">Prueba a llamar a Sofía desde «Probar la centralita». Cuando el despacho tenga número de teléfono, aquí aparecerán las llamadas reales.</p><div class="actions"><a class="btn primary sm" href="#sofia">Probar la centralita</a></div>';
+      return;
+    }
+    if (!real.selLlamada || !ls.some(function (l) { return l.id === real.selLlamada; })) real.selLlamada = ls[0].id;
+    L.innerHTML = ls.map(function (l) {
+      var d = new Date(l.creado_en);
+      var tag = l.urgente ? '<span class="tag warn">Urgente</span>' : l.atendida ? '<span class="tag green">Atendida</span>' : '<span class="tag">' + esc(TIPOLL[l.tipo] || "Llamada") + '</span>';
+      return '<button class="row" data-ll="' + esc(l.id) + '" aria-selected="' + (l.id === real.selLlamada) + '"><span class="t">' + esc(d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })) + '</span><span><b>' + esc(l.nombre || "Sin identificar") + '</b><span class="d">' + esc(d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }) + " · " + (l.tema || TIPOLL[l.tipo] || "")) + '</span></span>' + tag + '</button>';
+    }).join("");
+    L.querySelectorAll("[data-ll]").forEach(function (b) { b.addEventListener("click", function () { real.selLlamada = b.dataset.ll; pintarLlamadas(); }); });
+    var l = ls.filter(function (x) { return x.id === real.selLlamada; })[0];
+    var a = l.asunto_id ? asuntoDe(l.asunto_id) : null;
+    D.innerHTML = '<div class="dhead"><div><span class="lbl">Llamada · ' + esc(fechaHora(l.creado_en)) + '</span><h2>' + esc(l.nombre || "Sin identificar") + '</h2>' + (l.telefono ? '<p class="mute">' + esc(l.telefono) + '</p>' : '') + '</div><span class="tag ' + (l.verificado ? "green" : "warn") + '">' + (l.verificado ? "Verificado con código" : "No verificado") + '</span></div>' +
+      '<div><span class="lbl">Resumen</span><p>' + esc(l.resumen) + '</p></div>' +
+      '<dl class="kv"><dt>Tipo</dt><dd>' + esc(TIPOLL[l.tipo] || l.tipo) + (l.urgente ? " · urgente" : "") + '</dd><dt>Tema</dt><dd>' + esc(l.tema || "—") + '</dd><dt>Asunto</dt><dd>' + esc(a ? (a.descripcion || a.numero) : "—") + '</dd><dt>Pide que le llamen</dt><dd>' + (l.pide_llamada ? "Sí" : "No") + '</dd></dl>' +
+      (l.atendida ? '<div class="done">Marcada como atendida.</div>' : '<div class="actions"><button class="btn primary sm" id="ll-ok" type="button">Marcar como atendida</button></div>') +
+      '<p class="note">Sofía avisa al empezar de que es una asistente con inteligencia artificial y de que la llamada se graba.</p>';
+    var ok = $("ll-ok");
+    if (ok) ok.addEventListener("click", async function () {
+      ok.disabled = true;
+      var r = await sb.from("llamadas").update({ atendida: true }).eq("id", l.id);
+      if (r.error) { toast(traducirError(r.error.message)); ok.disabled = false; return; }
+      l.atendida = true; pintarLlamadas(); toast("Llamada marcada como atendida.");
+    });
+  }
+  var widgetCargado = false;
+  function vSofiaReal() {
+    if (!real.perfil) { view.innerHTML = '<p class="empty">Cargando…</p>'; return; }
+    var ejemplo = real.clientes.filter(function (c) { return c.codigo; }).slice(0, 5);
+    var vars = JSON.stringify({ despacho_id: real.perfil.despacho_id, despacho_nombre: real.despacho });
+    view.innerHTML = '<div class="grid2"><div style="display:grid;gap:14px;align-content:start">' +
+      '<p class="mute">Habla con Sofía desde el navegador, como si llamaras al despacho. Usa tus datos reales: pídele cómo va un asunto y dale el código de cliente. Cuando cuelgues, la llamada aparece en «Centralita».</p>' +
+      '<div class="panel"><h2>Códigos de tus clientes para probar</h2>' + (ejemplo.length ? ejemplo.map(function (c) { return '<div class="row"><span class="t"><b>' + esc(c.codigo) + '</b></span><span><b>' + esc(c.nombre) + '</b><span class="d">Dile «mi código es ' + esc(c.codigo.split("").join(" ")) + '»</span></span><span></span></div>'; }).join("") : '<p class="empty">Cuando conectes Clio, aquí verás el código de cada cliente.</p>') + '</div>' +
+      '<div class="excluded"><b>Prueba también:</b> di que eres el hermano de un cliente, pregunta si vas a ganar el juicio o di que te han despedido. Sofía no da datos sin código ni consejo jurídico.</div>' +
+      '<p class="note">Modo prueba: el número de teléfono del despacho se conecta después. Para hablar, el navegador te pedirá permiso para usar el micrófono.</p></div>' +
+      '<div class="panel" style="min-height:420px;display:grid;place-items:center;padding:24px"><div style="display:grid;gap:12px;justify-items:center;text-align:center"><span class="clio-logo" style="background:var(--green);width:56px;height:56px">S</span><b>Sofía · centralita de ' + esc(real.despacho) + '</b><span class="note">Pulsa el botón de llamada de la esquina inferior derecha.</span></div></div></div>' +
+      '<elevenlabs-convai agent-id="' + AGENTE_ID + '" dynamic-variables=\'' + esc(vars) + '\' variant="expanded"></elevenlabs-convai>';
+    if (!widgetCargado) {
+      var s = document.createElement("script");
+      s.src = "https://unpkg.com/@elevenlabs/convai-widget-embed@0.20.0/dist/index.js";
+      s.async = true; s.type = "text/javascript";
+      document.body.appendChild(s); widgetCargado = true;
+    }
+  }
+
+  /* ---------- Ajustes de los avisos (en Conexiones) ---------- */
+  function panelAjustes() {
+    var admin = real.perfil && real.perfil.rol === "admin";
+    return '<div class="panel"><h2>Avisos por email</h2><div class="conn"><dl class="kv"><dt>Sale desde</dt><dd>' + esc(real.despacho) + ' &lt;avisos@iurisapp.es&gt;</dd></dl>' +
+      '<div class="fld"><label for="aj-resp">Las respuestas del cliente llegan a</label><input id="aj-resp" type="email" value="' + esc(real.emailRespuesta) + '" placeholder="Si lo dejas vacío, a quien aprobó el aviso o a la administración"' + (admin ? "" : " disabled") + '></div>' +
+      '<div class="fld"><label for="aj-firma">Firma de los avisos</label><input id="aj-firma" value="' + esc(real.firma) + '" placeholder="' + esc(real.despacho) + '"' + (admin ? "" : " disabled") + '></div>' +
+      (admin ? '<div class="actions"><button class="btn ghost sm" id="aj-guardar" type="button">Guardar</button></div>' : '') + '</div></div>' +
+      '<div class="panel"><h2>Que salgan solos</h2><div class="conn"><p class="mute">Elige qué avisos envía Bufetea sin esperar tu aprobación. Los verás en «Avisos al cliente» con la etiqueta «Sale solo» y podrás cancelarlos hasta que salgan.</p>' +
+      [["recordatorio_semana", "Recordatorio una semana antes de cada cita"], ["recordatorio_vispera", "Recordatorio la víspera de cada cita"]].map(function (t) {
+        return '<label class="chk2"><input type="checkbox" data-auto="' + t[0] + '"' + (real.envioAuto && real.envioAuto.indexOf(t[0]) > -1 ? " checked" : "") + (admin ? "" : " disabled") + '><span>' + t[1] + '</span></label>';
+      }).join("") + (admin ? '<div class="actions"><button class="btn ghost sm" id="aj-auto" type="button">Guardar</button></div>' : '<p class="note">Solo la persona administradora puede cambiarlo.</p>') + '</div></div>';
+  }
+  function enlazarAjustes() {
+    var ba = $("aj-auto");
+    if (ba) ba.addEventListener("click", async function () {
+      var tipos = Array.prototype.slice.call(document.querySelectorAll("[data-auto]")).filter(function (x) { return x.checked; }).map(function (x) { return x.dataset.auto; });
+      var r = await sb.rpc("ajustar_envio_auto", { p_tipos: tipos });
+      if (r.error) { toast(traducirError(r.error.message)); return; }
+      real.envioAuto = r.data || tipos; toast(tipos.length ? "Hecho. Esos avisos saldrán solos." : "Hecho. Todos los avisos esperarán tu aprobación."); await cargarReal();
+    });
+    var b = $("aj-guardar"); if (!b) return;
+    ["aj-resp", "aj-firma"].forEach(function (id) { $(id).addEventListener("input", function () { real.editando = true; }); });
+    b.addEventListener("click", async function () {
+      var resp = $("aj-resp").value.trim(), firma = $("aj-firma").value.trim();
+      if (resp && !/^\S+@\S+\.\S+$/.test(resp)) { toast("Escribe un email válido."); return; }
+      var r = await sb.rpc("ajustar_despacho", { p_firma: firma, p_email_respuesta: resp });
+      if (r.error) { toast(traducirError(r.error.message)); return; }
+      real.firma = firma; real.emailRespuesta = resp; real.editando = false; toast("Ajustes guardados.");
+    });
+  }
+
+  /* ---------- formularios de cuenta ---------- */
+  document.querySelectorAll(".seg [data-modo]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      real.modo = b.dataset.modo;
+      document.querySelectorAll(".seg [data-modo]").forEach(function (x) { x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      $("a-boton").textContent = real.modo === "crear" ? "Crear cuenta" : "Entrar";
+      $("a-pass").autocomplete = real.modo === "crear" ? "new-password" : "current-password";
+      $("a-olvido").hidden = real.modo === "crear";
+      gmsg("a-msg", "");
+    });
+  });
+  $("f-auth").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var email = $("a-email").value.trim(), pass = $("a-pass").value, b = $("a-boton");
+    if (!/^\S+@\S+\.\S+$/.test(email)) { gmsg("a-msg", "Escribe un email válido.", "err"); return; }
+    if (pass.length < 8) { gmsg("a-msg", "La contraseña debe tener al menos 8 caracteres.", "err"); return; }
+    b.disabled = true; gmsg("a-msg", real.modo === "crear" ? "Creando la cuenta…" : "Entrando…");
+    try {
+      if (real.modo === "crear") {
+        var r = await sb.auth.signUp({ email: email, password: pass, options: { emailRedirectTo: location.origin + location.pathname } });
+        if (r.error) throw r.error;
+        if (r.data.session) { gmsg("a-msg", ""); await iniciar(); }
+        else gmsg("a-msg", "Te hemos enviado un email a " + email + ". Ábrelo para confirmar la cuenta y vuelve aquí para entrar.", "ok");
+      } else {
+        var r2 = await sb.auth.signInWithPassword({ email: email, password: pass });
+        if (r2.error) throw r2.error;
+        gmsg("a-msg", ""); await iniciar();
+      }
+    } catch (e) { gmsg("a-msg", traducirError(e.message), "err"); }
+    b.disabled = false;
+  });
+  $("a-olvido").addEventListener("click", async function () {
+    var email = $("a-email").value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) { gmsg("a-msg", "Escribe arriba tu email y vuelve a pulsar aquí.", "err"); return; }
+    var r = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (r.error) gmsg("a-msg", traducirError(r.error.message), "err");
+    else gmsg("a-msg", "Si hay una cuenta con ese email, te llegará un enlace para elegir una contraseña nueva.", "ok");
+  });
+  $("f-nueva").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var p = $("n-pass").value;
+    if (p.length < 8) { gmsg("n-msg", "La contraseña debe tener al menos 8 caracteres.", "err"); return; }
+    var r = await sb.auth.updateUser({ password: p });
+    if (r.error) { gmsg("n-msg", traducirError(r.error.message), "err"); return; }
+    real.recuperando = false; toast("Contraseña cambiada."); await iniciar();
+  });
+  $("f-despacho").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var n = $("d-nombre").value.trim(), b = $("d-boton");
+    if (n.length < 2) { gmsg("d-msg", "Escribe el nombre del despacho.", "err"); return; }
+    b.disabled = true; gmsg("d-msg", "Creando…");
+    var r = await sb.rpc("crear_despacho", { p_nombre: n, p_mi_nombre: $("d-yo").value.trim() || null });
+    b.disabled = false;
+    if (r.error) { gmsg("d-msg", traducirError(r.error.message), "err"); return; }
+    gmsg("d-msg", ""); await iniciar();
+  });
+  $("salir").addEventListener("click", function () { sb.auth.signOut(); });
+  $("d-salir").addEventListener("click", function () { sb.auth.signOut(); });
+  sb.auth.onAuthStateChange(function (evento) {
+    if (evento === "PASSWORD_RECOVERY") { real.recuperando = true; pantalla("nueva"); }
+    else if (evento === "SIGNED_OUT") { clearTimeout(real.timer); real.perfil = null; real.integ = null; real.cargado = false; pantalla("entrar"); }
+  });
+
+  var views = { hoy: ["Hoy", vHoyReal], asuntos: ["Asuntos", vAsuntosReal], clientes: ["Clientes", vClientesReal], agenda: ["Agenda", vAgendaReal], conexiones: ["Conexiones", vConexiones], novedades: ["Notificaciones explicadas", vNovedades], whatsapp: ["WhatsApp del despacho", vWhatsapp], consultas: ["Clientes nuevos", vConsultas], avisos: ["Avisos al cliente", vAvisosReal], "sin-noticias": ["Clientes sin noticias", vSinNoticias], indice: ["Índice y sello", vIndiceReal], llamadas: ["Centralita · llamadas", vLlamadasReal], sofia: ["Probar la centralita", vSofiaReal], portal: ["Portal del cliente", vPortal], documentos: ["Documentos y firma", vDocumentos], cobros: ["Cobro de provisiones", vCobros] };
+    function current() { var h = (location.hash || "").replace("#", ""); return views[h] ? h : "hoy"; }
+  function render() {
+    clearTimeout(simTimer);
+    var v = current();
+    if (real.vista !== v) { real.q = ""; real.confirmando = false; real.vista = v; }
+    vt.textContent = views[v][0];
+    document.querySelectorAll(".menu a").forEach(function (a) { if (a.dataset.v === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    views[v][1]();
+    if (EJEMPLOS[v]) view.insertAdjacentHTML("afterbegin", banner(v));
+    view.querySelectorAll("[data-go]").forEach(function (b) {
+      b.addEventListener("click", function () { if (b.dataset.id) sel[b.dataset.go] = b.dataset.id; location.hash = b.dataset.go; });
+    });
+  }
+  window.addEventListener("hashchange", function () { render(); view.scrollTop = 0; window.scrollTo(0, 0); });
+  counts(); iniciar();
+})();
+</script>
+</body>
+</html>
