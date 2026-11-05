@@ -25,7 +25,9 @@ Bufetea es un SaaS B2B para despachos de abogados en España. Es una capa de com
 - **No sustituye el programa de gestión del despacho.** Lo lee en modo de solo lectura y nunca escribe en él.
 - **Explica cada notificación judicial** en lenguaje claro, en el idioma del cliente.
 - **Envía las comunicaciones por WhatsApp o email.**
-- **Responde las consultas rutinarias** («¿cómo va lo mío?») con lo que el abogado ya aprobó, tras verificar la identidad del cliente con un código.
+- **Responde las consultas rutinarias** («¿cómo va lo mío?», «¿qué tengo que hacer?») con lo que pone en su expediente, tras verificar la identidad del cliente con un código.
+
+**Principio rector: automatización.** El objetivo de Bufetea es que el abogado no tenga que estar pendiente de avisar ni contestar a sus clientes. Por defecto Bufetea trabaja solo, y el abogado solo revisa lo sensible. El día a día del abogado en Bufetea debe ser mínimo.
 - **El abogado controla qué sale solo y qué revisa antes.**
 
 Propuesta de valor: «Ni una llamada más de “¿cómo va lo mío?”». Tus clientes, siempre informados, y tú recuperas tiempo para ejercer la abogacía.
@@ -33,7 +35,8 @@ Propuesta de valor: «Ni una llamada más de “¿cómo va lo mío?”». Tus cl
 ### Límites de la IA, obligatorios en todo el producto
 - Nunca da asesoramiento jurídico ni pronostica el resultado de un asunto.
 - Nunca habla de un asunto con quien no haya confirmado su código.
-- Nunca envía la explicación de una notificación judicial sin aprobación, salvo lo que el despacho haya marcado como automático en sus reglas.
+- Nunca envía sin aprobación lo que las reglas marcan como «con revisión» (por defecto: sentencias, autos que ponen fin al procedimiento, requerimientos con plazo para el cliente y todo lo relacionado con dinero).
+- Nunca cuenta notas internas ni datos del expediente que no estén pensados para el cliente: solo una lista cerrada de campos (fase, últimas actuaciones explicadas, próximas fechas y lo que el cliente tiene que aportar).
 - Nunca escribe en el programa de gestión.
 - Siempre se identifica como IA (Reglamento europeo de IA). Los mensajes indican que se redactaron con ayuda de IA y que los aprobó el abogado.
 
@@ -106,11 +109,12 @@ Cada función tiene criterios de aceptación. No la des por terminada hasta que 
 - **Despachos con varios usuarios.** Roles: titular/admin, abogado y administración. Usuarios ilimitados. Aislamiento total entre despachos con Row Level Security en todas las tablas.
 - **Login** con email y contraseña, recuperación de contraseña y sesión persistente.
 - **Clientes y asuntos:** ficha de cliente (teléfono, email, idioma, canal preferido, código de verificación) y ficha de asunto (número, juzgado, fase, abogado responsable, estado abierto, cerrado o archivado). Cada asunto tiene su historial completo de comunicaciones.
-- **Modo independiente:**
+- **Modo integrado (el principal):** Bufetea lee del programa de gestión, sin escribir nunca, los clientes, asuntos, fases, fechas, tareas pendientes del cliente y, si el programa las guarda, las notificaciones de LexNET. Clientes y asuntos NO se dan de alta en Bufetea: se sincronizan solos. Las notificaciones se leen del programa automáticamente; el reenvío del PDF es solo la alternativa cuando no se pueden leer.
+- **Modo independiente (alternativa para programas que no permiten conexión):**
   - Cada despacho tiene una dirección de email propia para reenviar PDFs de LexNET.
   - Una Edge Function recibe el correo, extrae el PDF y lo asocia al asunto (por número de procedimiento) o lo deja «sin asignar» para que el despacho lo asigne.
   - Alta e importación de clientes y asuntos desde CSV o Excel.
-- **Modo integrado:**
+- **Conector del modo integrado:**
   - Conector de solo lectura con el programa de gestión: lectura de asuntos, clientes y agenda, y sincronización de novedades cuando el programa lo permita.
   - Diseña una capa de conectores genérica (`connectors/`). Si tienes acceso al conector existente del proyecto (`bufetea-clio`), intégralo como el primero.
   - Nunca escrituras hacia el programa de gestión.
@@ -120,17 +124,18 @@ Cada función tiene criterios de aceptación. No la des por terminada hasta que 
 1. **Notificaciones explicadas.**
    - Al llegar un PDF, la IA identifica el tipo de resolución, qué ha pasado, qué plazo corre y si el cliente tiene que hacer algo.
    - Genera el resumen para el abogado y el mensaje para el cliente, sin tecnicismos.
-   - Por defecto queda «Por aprobar».
+   - Clasifica la notificación. Por defecto, las de trámite (diligencias, señalamientos, admisiones, traslados) se envían solas al cliente; las sensibles (sentencias, autos que ponen fin al procedimiento, requerimientos con plazo, dinero) quedan «Por aprobar». El despacho puede cambiarlo en Reglas.
 2. **WhatsApp del despacho.**
    - Bandeja compartida por el equipo: identifica al cliente por su número y enlaza la conversación con sus asuntos.
    - Las notas de voz se transcriben y los adjuntos se guardan en el asunto.
    - La IA propone la respuesta y la envía una persona.
 3. **«¿Cómo va lo mío?» con código.**
    - El cliente escribe y confirma su código.
-   - Recibe la última novedad aprobada de su asunto.
+   - Bufetea le contesta con lo que pone su expediente (fase actual, últimas actuaciones explicadas, próximas fechas y lo que tiene que aportar), en lenguaje claro y en su idioma. Nunca notas internas ni interpretaciones jurídicas.
+   - Si el expediente indica documentos o trámites pendientes del cliente, Bufetea se los recuerda solo.
    - Sin código, no se da ninguna información.
 4. **Clientes nuevos.** Las consultas de números desconocidos se recogen a cualquier hora: la IA resume el caso, propone cita y avisa al despacho. Nunca da consejo jurídico.
-5. **En el idioma del cliente.** El mensaje aprobado se envía en el idioma de su ficha: español, inglés, rumano, francés, árabe, chino y otros.
+5. **En el idioma del cliente.** El mensaje se envía en el idioma de su ficha: español, inglés, rumano, francés, árabe, chino y otros.
 6. **Preparación del juicio.** Recordatorio la semana antes y la víspera: dónde, a qué hora, qué llevar y qué va a pasar.
 7. **Clientes sin noticias.** Aviso interno cuando un cliente lleva más de 30 días sin noticias, con un mensaje propuesto.
 8. **Mapa del procedimiento.** Fase actual y siguientes del asunto, explicadas sin tecnicismos.
@@ -140,13 +145,15 @@ Cada función tiene criterios de aceptación. No la des por terminada hasta que 
 **Canales:** WhatsApp (WhatsApp Business Cloud API de Meta) y email (Resend, sobre la Edge Function `mensajes` ya existente). El canal se elige en la ficha del cliente.
 
 ### 4.3 Reglas: control del abogado
-- **Automático:** el despacho lo activa por tipo de mensaje.
-  - Recordatorios de cita (la semana antes y la víspera, como ya hace `envio_auto`).
-  - Respuesta al «¿cómo va lo mío?» con lo ya aprobado.
+- **Automático (activado por defecto; el despacho puede desactivar cada tipo):**
+  - Explicación de las notificaciones de trámite: diligencias, señalamientos, admisiones y traslados.
+  - Respuesta al «¿cómo va lo mío?» con lo que pone su expediente.
+  - Recordatorios de cita y preparación del juicio (la semana antes y la víspera, como ya hace `envio_auto`).
+  - Recordatorio de documentos o trámites pendientes del cliente.
   - Recogida de consultas nuevas.
   - Avisos internos de clientes sin noticias.
-- **Con revisión:** explicaciones de notificaciones, respuestas nuevas de la IA por WhatsApp, mensajes a clientes sin noticias y cierre con reseña (salvo que se active como automático).
-- **Límites:** bloqueados siempre, no configurables. Asesoramiento jurídico, pronósticos, hablar sin código verificado, enviar fuera de las reglas y escribir en el programa de gestión.
+- **Con revisión (por defecto; el despacho puede pasar cualquiera a automático, salvo lo marcado como siempre en revisión si así lo decide):** sentencias, autos que ponen fin al procedimiento, requerimientos con plazo para el cliente, todo lo relacionado con dinero, respuestas libres de la IA por WhatsApp a preguntas que no se contestan con el expediente, mensajes a clientes sin noticias y cierre con reseña.
+- **Límites:** bloqueados siempre, no configurables. Asesoramiento jurídico, pronósticos, hablar sin código verificado, contar notas internas o datos no destinados al cliente, enviar fuera de las reglas y escribir en el programa de gestión.
 - **Trazabilidad:** todo mensaje enviado guarda quién lo aprobó, o «automático» con la regla que lo permitió, y cuándo.
 
 ### 4.4 Extras: se contratan con cualquier plan
