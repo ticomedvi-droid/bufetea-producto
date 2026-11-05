@@ -1,0 +1,136 @@
+{
+ "_aviso": "Generado por scripts/comercial_a_json.py desde docs/comercial.py. No editar a mano.",
+ "planes": [
+  {
+   "id": "starter",
+   "nombre": "Starter",
+   "precio_mes": 49,
+   "precio_anio": 490,
+   "asuntos_incluidos": 50,
+   "exceso_asunto": 0.4,
+   "incluye": [],
+   "para": "Para abogados independientes y despachos pequeños.",
+   "recomendado": false,
+   "caracteristicas": [
+    "Todas las funciones principales de Bufetea",
+    "Notificaciones judiciales explicadas",
+    "Comunicaciones por WhatsApp y email",
+    "Respuestas a consultas rutinarias",
+    "Recordatorios y seguimiento",
+    "Captación de nuevos clientes",
+    "Mensajes en el idioma del cliente",
+    "Panel de control",
+    "Usuarios ilimitados"
+   ],
+   "soporte_prioritario": false,
+   "acompanamiento": false
+  },
+  {
+   "id": "professional",
+   "nombre": "Professional",
+   "precio_mes": 89,
+   "precio_anio": 890,
+   "asuntos_incluidos": 150,
+   "exceso_asunto": 0.35,
+   "incluye": [
+    "portal"
+   ],
+   "para": "Para despachos en crecimiento.",
+   "recomendado": true,
+   "caracteristicas": [
+    "Todo lo de Starter",
+    "Bufetea Portal incluido, valorado en 19 €/mes",
+    "Soporte prioritario",
+    "Usuarios ilimitados"
+   ],
+   "soporte_prioritario": true,
+   "acompanamiento": false
+  },
+  {
+   "id": "business",
+   "nombre": "Business",
+   "precio_mes": 149,
+   "precio_anio": 1490,
+   "asuntos_incluidos": 400,
+   "exceso_asunto": 0.3,
+   "incluye": [
+    "portal",
+    "pay"
+   ],
+   "para": "Para despachos con mayor volumen y más automatización.",
+   "recomendado": false,
+   "caracteristicas": [
+    "Todo lo de Professional",
+    "Bufetea Portal y Bufetea Pay incluidos, valorados en 38 €/mes",
+    "Soporte prioritario",
+    "Acompañamiento de puesta en marcha",
+    "Usuarios ilimitados"
+   ],
+   "soporte_prioritario": true,
+   "acompanamiento": true
+  }
+ ],
+ "extras": [
+  {
+   "id": "voice",
+   "nombre": "Bufetea Voice",
+   "subtitulo": "Centralita con IA",
+   "precio_mes": 39,
+   "desde": true,
+   "caracteristicas": [
+    "Atiende llamadas entrantes",
+    "Identifica al cliente con los mecanismos de verificación disponibles",
+    "Responde consultas rutinarias con información autorizada",
+    "Recoge consultas de nuevos clientes",
+    "Puede proponer citas",
+    "Deja registro de la conversación",
+    "Pasa al despacho lo que necesita a una persona"
+   ],
+   "nota": "Minutos incluidos según uso: te los confirmamos antes de contratar. Los consumos adicionales tienen límites y tarifas transparentes."
+  },
+  {
+   "id": "portal",
+   "nombre": "Bufetea Portal",
+   "subtitulo": "Portal del cliente",
+   "precio_mes": 19,
+   "desde": false,
+   "caracteristicas": [
+    "Portal con la imagen de tu despacho",
+    "Acceso del cliente a la información autorizada de su asunto",
+    "Seguimiento del estado del procedimiento",
+    "Comunicaciones y documentos",
+    "Acceso seguro"
+   ],
+   "nota": null
+  },
+  {
+   "id": "docs",
+   "nombre": "Bufetea Docs",
+   "subtitulo": "Documentos y firma",
+   "precio_mes": 29,
+   "desde": false,
+   "caracteristicas": [
+    "Solicitud de documentación",
+    "Recordatorios automáticos",
+    "Recogida de documentos",
+    "Preparación de documentos",
+    "Firma electrónica mediante proveedor compatible"
+   ],
+   "nota": "Si el proveedor de firma cobra por firma, esa tarifa se muestra aparte."
+  },
+  {
+   "id": "pay",
+   "nombre": "Bufetea Pay",
+   "subtitulo": "Cobro de provisiones",
+   "precio_mes": 19,
+   "desde": false,
+   "caracteristicas": [
+    "Solicitud de provisiones de fondos",
+    "Recordatorios de pago",
+    "Enlaces de pago seguros",
+    "Seguimiento de pagos pendientes"
+   ],
+   "nota": "Las comisiones del proveedor de pagos se muestran aparte."
+  }
+ ]
+}
