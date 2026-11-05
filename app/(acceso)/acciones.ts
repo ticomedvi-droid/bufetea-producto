@@ -10,6 +10,8 @@ const rutaSegura = (v: unknown) => {
   const s = String(v ?? "");
   return s.startsWith("/") && !s.startsWith("//") && !s.startsWith("/\\") ? s : "/hoy";
 };
+/** Al entrar se muestra la bienvenida animada (una sola vez, por el parámetro). */
+const conBienvenida = (ruta: string) => ruta + (ruta.includes("?") ? "&" : "?") + "bienvenida=1";
 
 async function origen() {
   if (APP_URL) return APP_URL;
@@ -21,7 +23,7 @@ async function origen() {
 
 export async function entrar(_: Resultado, f: FormData): Promise<Resultado> {
   const vuelta = rutaSegura(f.get("vuelta"));
-  if (MODO_DEMO) return { ok: true, mensaje: "Hola, Elena.", ir: vuelta };
+  if (MODO_DEMO) return { ok: true, mensaje: "Hola, Elena.", ir: conBienvenida(vuelta) };
   const email = String(f.get("email") ?? "").trim();
   const clave = String(f.get("clave") ?? "");
   if (!EMAIL.test(email)) return { ok: false, mensaje: "Revisa el correo electrónico." };
@@ -31,7 +33,7 @@ export async function entrar(_: Resultado, f: FormData): Promise<Resultado> {
   if (error) {
     return { ok: false, mensaje: /confirm/i.test(error.message) ? "Confirma primero tu correo con el enlace que te enviamos." : "El correo o la contraseña no son correctos." };
   }
-  return { ok: true, mensaje: "Hola de nuevo.", ir: vuelta };
+  return { ok: true, mensaje: "Hola de nuevo.", ir: conBienvenida(vuelta) };
 }
 
 export async function recuperar(_: Resultado, f: FormData): Promise<Resultado> {

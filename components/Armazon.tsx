@@ -5,6 +5,7 @@ import { Candado, Logo } from "@/components/Logo";
 import { MENU, tituloDe } from "@/lib/menu";
 import type { IdExtra } from "@/lib/tipos";
 import { salir } from "@/app/(acceso)/acciones";
+import { AnimacionEntrada } from "@/components/AnimacionEntrada";
 
 type Props = {
   children: React.ReactNode;
@@ -14,18 +15,20 @@ type Props = {
   plan: string;
   extrasActivos: IdExtra[];
   porRevisar: number;
+  noLeidos: number;
   demo: boolean;
 };
 
 const iniciales = (n: string) =>
   n.replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("") || "?";
 
-export function Armazon({ children, nombre, despacho, rolTexto, plan, extrasActivos, porRevisar, demo }: Props) {
+export function Armazon({ children, nombre, despacho, rolTexto, plan, extrasActivos, porRevisar, noLeidos, demo }: Props) {
   const ruta = usePathname();
   const n = extrasActivos.length;
   return (
     <>
       <a className="sr" href="#contenido">Saltar al contenido</a>
+      <AnimacionEntrada />
       {demo && (
         <div className="demo-bar" role="note">
           <span><b>Ejemplo de demostración con datos ficticios.</b> No se envía nada a nadie.</span>
@@ -44,8 +47,9 @@ export function Armazon({ children, nombre, despacho, rolTexto, plan, extrasActi
                   return (
                     <Link key={e.ruta} href={e.ruta} aria-current={actual ? "page" : undefined} className={bloqueado ? "locked" : undefined}
                       data-extra={e.extra} data-bloqueado={bloqueado ? "1" : undefined}>
-                      {e.texto}
+                      <span className="mtxt">{e.texto}{e.sub && <small className="msub">{e.sub}</small>}</span>
                       {e.contador === "revisar" && porRevisar > 0 && <span className="count">{porRevisar}</span>}
+                      {e.contador === "whatsapp" && noLeidos > 0 && <span className="count">{noLeidos}</span>}
                       {bloqueado && <span className="lock" title="Extra no incluido en tu plan"><Candado /><span className="sr"> (no incluido en tu plan)</span></span>}
                     </Link>
                   );

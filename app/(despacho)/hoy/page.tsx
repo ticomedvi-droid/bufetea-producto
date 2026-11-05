@@ -40,8 +40,8 @@ export default async function Hoy() {
       )}
       <div className="stats" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
         <div className="stat hl"><b>{h.porRevisar}</b><span>Novedades por revisar</span></div>
-        <div className="stat"><b>{h.asuntosActivos}</b><span>Asuntos en curso</span></div>
-        <div className="stat"><b>{h.informados == null ? "—" : `${h.informados} %`}</b><span>Clientes informados</span></div>
+        <div className="stat"><b>{h.asuntosActivos}</b><span>Asuntos activos</span></div>
+        <div className="stat" data-prueba="informados"><b>{h.informados == null ? "—" : `${h.informados} %`}</b><span>{h.informados == null ? "Clientes informados · Sin datos todavía" : "Clientes informados"}</span></div>
       </div>
       <div className="cols">
         <div className="panel">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { equipo, sesion } from "@/lib/datos";
+import { equipo, numeroWhatsApp, sesion } from "@/lib/datos";
 import { FormAccion } from "@/components/Envio";
 import { direcciones, VERSION_ART28 } from "@/lib/config";
 import { ROLES } from "@/lib/extras-info";
@@ -15,7 +15,7 @@ export default async function Ajustes() {
   if (!s || s === "sin-despacho") return null;
   const d = s.despacho;
   const admin = s.rol === "admin";
-  const eq = await equipo();
+  const [eq, wa] = await Promise.all([equipo(), numeroWhatsApp()]);
   const dir = direcciones(d.slug);
   return (
     <>
@@ -29,6 +29,7 @@ export default async function Ajustes() {
               <dt>Buzón para LexNET</dt><dd>{dir.buzon ? <code style={{ fontFamily: "var(--mono)" }}>{dir.buzon}</code> : PENDIENTE}</dd>
               <dt>Remitente de los emails</dt><dd>{dir.remitente ?? PENDIENTE}</dd>
               <dt>Portal del cliente</dt><dd>{dir.portal ?? PENDIENTE}</dd>
+              <dt>WhatsApp del despacho</dt><dd>{wa ? <>{wa.numero} {wa.modo === "pruebas" ? <span className="tag warn">Modo de pruebas de Meta</span> : <span className="tag green">Conectado</span>}</> : <span className="note">Sin conectar: lo dejamos montado en la puesta en marcha.</span>}</dd>
             </dl>
             <p className="note">Reenvía a tu buzón los PDF de las notificaciones de LexNET y Bufetea los asociará a su asunto por el número de procedimiento.</p>
           </div>

@@ -53,7 +53,11 @@ export async function guardarCliente(_: Resultado, f: FormData): Promise<Resulta
   if (!desp) return { ok: false, mensaje: "Inicia sesión de nuevo." };
   if (id) {
     if (!UUID.test(id)) return { ok: false, mensaje: "Cliente no válido." };
-    const { error } = await sb.from("clientes").update(datos).eq("id", id);
+    const { data: actual } = await sb.from("clientes").select("origen").eq("id", id).maybeSingle();
+    if (!actual) return { ok: false, mensaje: "Cliente no encontrado." };
+    // Lo que viene del programa de gestión no se toca desde aquí: solo los datos propios de Bufetea.
+    const cambios = actual.origen === "manual" || actual.origen === "csv" ? datos : { idioma: datos.idioma, canal: datos.canal, dni: datos.dni, notas: datos.notas };
+    const { error } = await sb.from("clientes").update(cambios).eq("id", id);
     return error ? fallo(error) : listo("Cliente guardado.");
   }
   const { data, error } = await sb.from("clientes").insert({ ...datos, despacho_id: desp, origen: "manual" }).select("id").single();
@@ -111,7 +115,14 @@ export async function guardarAsunto(_: Resultado, f: FormData): Promise<Resultad
   if (!datos.numero && !datos.procedimiento && !datos.descripcion) return { ok: false, mensaje: "Escribe al menos el número, el procedimiento o una descripción." };
   if (id) {
     if (!UUID.test(id)) return { ok: false, mensaje: "Asunto no válido." };
-    const { error } = await sb.from("asuntos").update(datos).eq("id", id);
+    const { data: actual } = await sb.from("asuntos").select("origen").eq("id", id).maybeSingle();
+    if (!actual) return { ok: false, mensaje: "Asunto no encontrado." };
+    const propio = actual.origen === "manual" || actual.origen === "csv";
+    const cambios = propio ? datos : {
+      procedimiento: datos.procedimiento, juzgado: datos.juzgado, tipo_procedimiento: datos.tipo_procedimiento, fase_cliente: datos.fase_cliente,
+      abogado_id: datos.abogado_id, informar: datos.informar, duplicado_de: datos.duplicado_de, notas: datos.notas,
+    };
+    const { error } = await sb.from("asuntos").update(cambios).eq("id", id);
     return error ? fallo(error) : listo("Asunto guardado.");
   }
   const clienteId = txt(f, "cliente_id", 40);

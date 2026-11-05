@@ -8,15 +8,15 @@ export function FormCliente({ c }: { c?: Cliente }) {
   return (
     <FormAccion accion={guardarCliente} className="form">
       {c && <input type="hidden" name="id" value={c.id} />}
-      {delPrograma && <p className="note">Este cliente viene de tu programa de gestión: el nombre y los datos de contacto se actualizan desde allí.</p>}
+      {delPrograma && <p className="note">Este cliente viene de tu programa de gestión: el nombre y los datos de contacto se cambian allí y se actualizan solos. Aquí puedes ajustar el idioma, el canal, el DNI y las notas.</p>}
       <div className="fila2">
-        <div className="fld"><label htmlFor="c-nombre">Nombre y apellidos o razón social</label><input id="c-nombre" name="nombre" required minLength={2} maxLength={200} defaultValue={c?.nombre} /></div>
+        <div className="fld"><label htmlFor="c-nombre">Nombre y apellidos o razón social</label><input id="c-nombre" name="nombre" required minLength={2} maxLength={200} defaultValue={c?.nombre} readOnly={delPrograma} /></div>
         <div className="fld"><label htmlFor="c-tipo">Tipo</label>
-          <select id="c-tipo" name="tipo" defaultValue={c?.tipo ?? "Persona"}><option value="Persona">Persona</option><option value="Empresa">Empresa</option></select></div>
+          <select id="c-tipo" name="tipo" defaultValue={c?.tipo ?? "Persona"} disabled={delPrograma}><option value="Persona">Persona</option><option value="Empresa">Empresa</option></select></div>
       </div>
       <div className="fila3">
-        <div className="fld"><label htmlFor="c-tel">Móvil</label><input id="c-tel" name="telefono" type="tel" autoComplete="off" maxLength={40} defaultValue={c?.telefono ?? ""} /></div>
-        <div className="fld"><label htmlFor="c-email">Email</label><input id="c-email" name="email" type="email" autoComplete="off" maxLength={200} defaultValue={c?.email ?? ""} /></div>
+        <div className="fld"><label htmlFor="c-tel">Móvil</label><input id="c-tel" name="telefono" type="tel" autoComplete="off" maxLength={40} defaultValue={c?.telefono ?? ""} readOnly={delPrograma} /></div>
+        <div className="fld"><label htmlFor="c-email">Email</label><input id="c-email" name="email" type="email" autoComplete="off" maxLength={200} defaultValue={c?.email ?? ""} readOnly={delPrograma} /></div>
         <div className="fld"><label htmlFor="c-dni">DNI, NIE o NIF</label><input id="c-dni" name="dni" maxLength={20} defaultValue={c?.dni ?? ""} /><span className="ayuda">Para que entre en el portal, si lo tienes.</span></div>
       </div>
       <div className="fila2">

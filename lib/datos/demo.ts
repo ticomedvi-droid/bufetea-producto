@@ -2,7 +2,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { calcularImporte, type Facturacion } from "@/lib/precio";
 import type {
-  Asunto, AvisoUso, Cliente, EstimacionMes, ExtraEstado, IdExtra, Llamada, Mensaje, Miembro, PlanCompleto, ResumenHoy, Sesion,
+  Asunto, Aviso, AvisoUso, Cliente, Conversacion, EstimacionMes, ExtraEstado, IdExtra, Indicadores, Indice, Integracion, Llamada, Mensaje,
+  MensajeWA, Miembro, Notificacion, PlanCompleto, ReglaId, ResumenHoy, Sesion, SinNoticias,
 } from "@/lib/tipos";
 import { COMERCIAL_DEMO } from "./comercial-demo";
 
@@ -11,6 +12,9 @@ import { COMERCIAL_DEMO } from "./comercial-demo";
 export const COOKIE_PLAN = "bufetea_demo_plan";
 export const COOKIE_EXTRAS = "bufetea_demo_extras";
 export const COOKIE_SOLICITUDES = "bufetea_demo_solicitudes";
+export const COOKIE_INTEGRADO = "bufetea_demo_integrado";
+export const COOKIE_REGLAS = "bufetea_demo_reglas";
+export const COOKIE_RESUELTAS = "bufetea_demo_resueltas";
 
 async function estadoDemo() {
   const c = await cookies();
@@ -181,15 +185,143 @@ export async function llamadas(): Promise<Llamada[]> {
       verificado: true, atendida: true, creado_en: "2026-11-04T18:05:00Z" },
   ];
 }
-export async function hoy(): Promise<ResumenHoy> {
+const HOY = "2026-11-05";
+const N = (id: string, hora: string, asunto: string, doc: string, texto: string, resumen: string, borrador: string, plazo: [string | null, string | null, number | null], fase: string,
+  extra: Partial<Notificacion> = {}): Notificacion => {
+  const a = ASUNTOS.find((x) => x.id === asunto)!;
+  const c = CLIENTES.find((x) => x.id === a.cliente_id)!;
   return {
-    porRevisar: 3,
+    id, asunto_id: a.id, origen: "buzon", archivo_nombre: `${doc} ${a.numero}.pdf`, estado: "lista", error: null, tipo_resolucion: doc, organo: a.juzgado,
+    procedimiento: a.numero, lo_que_dice: texto, resumen, plazo_tipo: plazo[0], plazo_descripcion: plazo[0], plazo_dias: plazo[2], plazo_fecha: plazo[1],
+    senalamiento_en: null, cliente_debe_actuar: false, accion_cliente: null, fase_sugerida: fase, ia: "claude-opus-5-5", creada_en: `${HOY}T${hora}:00+01:00`,
+    asunto: { id: a.id, numero: a.numero, descripcion: a.descripcion, informar: a.informar, abogado: a.abogado, area: a.area },
+    cliente: { id: c.id, nombre: c.nombre, idioma: c.idioma, canal: c.canal },
+    mensaje: borrador ? { id: `m-${id}`, asunto_id: a.id, cliente_id: c.id, tipo: "novedad", canal: c.canal, titulo: fase, cuerpo: borrador, cuerpo_es: borrador,
+      idioma: c.idioma, destinatario: c.telefono ?? c.email, aprobado_por: null, estado: "borrador", creado_en: `${HOY}T${hora}:00+01:00`, enviado_en: null, programado_para: null, auto: false } : null,
+    ...extra,
+  };
+};
+
+const NOTIFICACIONES: Notificacion[] = [
+  N("n1", "09:14", "a1", "Decreto",
+    "Se admite a trámite la demanda presentada por el procurador Sr. Gálvez en nombre de D.ª Lucía Martín Sáez frente a Construcciones Levante, S.L. Dese traslado de la misma a la parte demandada, emplazándola para que la conteste en el plazo de veinte días hábiles, con los apercibimientos legales.",
+    "Demanda admitida. Emplazada la demandada para contestar en 20 días hábiles. El cliente no tiene que hacer nada.",
+    "Hola, Lucía. El juzgado ha admitido su demanda. Ahora la constructora tiene 20 días hábiles para contestar. Usted no tiene que hacer nada: le avisaremos en cuanto haya novedades.\n\nUn saludo,\nOrtega & Ruiz Abogados",
+    ["Contestación de la demandada", "2026-12-01", 20], "Demanda admitida"),
+  N("n2", "09:31", "a2", "Diligencia de ordenación",
+    "Se señala para la celebración de los actos de conciliación y, en su caso, juicio el día 14 de enero de 2027, a las 10:20 horas, en la Sala de Vistas n.º 3 de este Juzgado de lo Social n.º 2. Cítese a las partes, con la advertencia de que la incomparecencia injustificada del demandante supondrá tenerle por desistido de su demanda.",
+    "Conciliación y juicio el 14/01/2027 a las 10:20, sala 3. Advertencia de desistimiento si no comparece el actor.",
+    "Hola, Andrés. Ya hay fecha para su juicio: el 14 de enero a las 10:20, en el Juzgado de lo Social n.º 2, sala 3. Es importante que venga ese día. Javier le llamará antes para preparar juntos el juicio.\n\nUn saludo,\nOrtega & Ruiz Abogados",
+    [null, null, null], "Juicio señalado", { senalamiento_en: "2027-01-14T10:20:00+01:00" }),
+  N("n3", "10:02", "a3", "Diligencia de ordenación",
+    "No constando que la parte demandada haya desalojado voluntariamente el inmueble, se mantiene la fecha señalada para la práctica de la diligencia de lanzamiento el día 2 de diciembre de 2026, a las 11:00 horas, debiendo la parte actora facilitar los medios necesarios para su práctica.",
+    "Se mantiene el lanzamiento: 02/12/2026 a las 11:00. La actora debe facilitar medios (cerrajero).",
+    "Hola, Rosa. Se mantiene el lanzamiento: el 2 de diciembre a las 11:00 recuperará la vivienda. Ese día hará falta un cerrajero; Marta le llamará esta semana para organizarlo todo.\n\nUn saludo,\nOrtega & Ruiz Abogados",
+    [null, null, null], "Lanzamiento señalado", { senalamiento_en: "2026-12-02T11:00:00+01:00" }),
+  N("n4", "10:47", "a8", "Auto",
+    "Se acuerda recibir declaración en calidad de investigado a D. Tomás Alcaraz Vidal, citándole para el día 27 de noviembre de 2026 a las 9:30 horas, debiendo comparecer asistido de letrado.",
+    "Citación como investigado el 27/11/2026 a las 9:30, con letrado.", "", [null, null, null], "Citado a declarar", { senalamiento_en: "2026-11-27T09:30:00+01:00" }),
+];
+
+async function estadoExtra() {
+  const c = await cookies();
+  const reglas = c.get(COOKIE_REGLAS)?.value;
+  return {
+    integrado: c.get(COOKIE_INTEGRADO)?.value === "1",
+    reglas: (reglas == null ? ["recordatorio_semana", "recordatorio_vispera", "respuesta_codigo"] : reglas.split(",").filter(Boolean)) as ReglaId[],
+    resueltas: (c.get(COOKIE_RESUELTAS)?.value ?? "").split(",").filter(Boolean),
+  };
+}
+
+export async function integracion(): Promise<Integracion> {
+  const e = await estadoExtra();
+  return e.integrado ? { conectada: true, ultimaSync: new Date(Date.now() - 7 * 60e3).toISOString(), error: null } : { conectada: false, ultimaSync: null, error: null };
+}
+export async function indice(): Promise<Indice> {
+  return { porcentaje: 92, clientes: 142, informados: 131, asuntos: 142, sello: true, sin_datos: false };
+}
+export async function indicadores(): Promise<Indicadores> {
+  return { minutos_medios_notificacion: 200, como_va_lo_mio: 9, asuntos_excluidos: 2 };
+}
+export async function historicoIndice() {
+  return [{ mes: "2026-10-01", porcentaje: 89, sello: true }, { mes: "2026-09-01", porcentaje: 84, sello: false }, { mes: "2026-08-01", porcentaje: 81, sello: false }];
+}
+export async function notificaciones(filtro: "pendientes" | "todas" = "pendientes"): Promise<Notificacion[]> {
+  const e = await estadoExtra();
+  const lista = NOTIFICACIONES.map((n) => (e.resueltas.includes(n.id) ? { ...n, estado: "enviada" as const } : n));
+  return filtro === "pendientes" ? lista.filter((n) => n.estado === "lista") : lista;
+}
+export async function reglas(): Promise<ReglaId[]> {
+  return (await estadoExtra()).reglas;
+}
+export async function avisos(): Promise<Aviso[]> {
+  const r = await reglas();
+  const A = (id: string, tipo: string, cliente: string, asunto: string, cuando: string, cuerpo: string): Aviso => {
+    const auto = r.includes(tipo as ReglaId);
+    return { id, asunto_id: null, cliente_id: null, tipo, canal: "whatsapp", titulo: tipo, cuerpo, estado: auto ? "programado" : "borrador", creado_en: `${HOY}T08:00:00+01:00`,
+      enviado_en: null, programado_para: cuando, auto, cliente, asunto, regla_auto: auto ? tipo : null };
+  };
+  return [
+    A("r1", "recordatorio_semana", "Pedro Navarro Ruiz", "301/2026 · Reclamación por accidente de tráfico", "2026-11-11T10:00:00+01:00",
+      "Hola, Pedro. Le recordamos que el 18 de noviembre a las 16:00 tiene la reunión con el perito en el despacho. Si tiene cualquier duda, responda a este mensaje."),
+    A("r2", "recordatorio_vispera", "Tomás Alcaraz Vidal", "610/2026 · Diligencias previas", "2026-11-26T10:00:00+01:00",
+      "Hola, Tomás. Le recordamos que mañana, a las 9:30, tiene la declaración en el juzgado. Traiga su DNI. Javier estará con usted."),
+    A("a3", "cierre", "Pedro Navarro Ruiz", "198/2025 · Reclamación a la comunidad de propietarios", "2026-11-06T10:00:00+01:00",
+      "Hola, Pedro. Su asunto ha terminado. Ha sido un placer ayudarle. Si está contento con nuestro trabajo, nos ayudaría mucho que nos dejara una valoración en Google."),
+  ];
+}
+const CONVERSACIONES: (Conversacion & { msgs: MensajeWA[] })[] = (() => {
+  const W = (id: string, dir: "entrada" | "salida", texto: string, hora: string, extra: Partial<MensajeWA> = {}): MensajeWA =>
+    ({ id, direccion: dir, tipo: "texto", texto, transcripcion: null, media_path: null, estado: dir === "entrada" ? "recibido" : "leido", auto: false, regla_auto: null, creado_en: `${HOY}T${hora}:00+01:00`, enviado_por_nombre: null, ...extra });
+  return [
+    { id: "w1", telefono: "34600000101", nombre_perfil: "Lucía", cliente_id: "c1", cliente: "Lucía Martín Sáez", ultimo_entrante_en: `${HOY}T07:47:00+01:00`, ultimo_mensaje_en: `${HOY}T07:47:00+01:00`,
+      no_leidos: 2, verificada: false, ultimo_texto: "Dicen que no van a pagar las facturas de octubre…",
+      propuesta: "Buenos días, Lucía. Recibido el burofax. Elena lo revisa hoy y le llamamos antes de las 13:00 para contarle cómo afecta a su demanda.",
+      propuesta_motivo: "Envía un documento y una nota de voz: acuse de recibo y llamada del abogado.",
+      msgs: [W("w1a", "entrada", "Buenos días. Me ha llegado esto de la constructora por burofax.", "07:45"),
+        W("w1b", "entrada", "Burofax_Construcciones_Levante.jpg", "07:45", { tipo: "imagen", media_path: "demo/burofax.jpg" }),
+        W("w1c", "entrada", null as unknown as string, "07:47", { tipo: "audio", transcripcion: "Dicen que no van a pagar las facturas de octubre y que reclame si quiero." })] },
+    { id: "w0", telefono: "34600000103", nombre_perfil: "Rosa", cliente_id: "c3", cliente: "Rosa Jiménez Llamas", ultimo_entrante_en: `${HOY}T08:05:00+01:00`, ultimo_mensaje_en: `${HOY}T08:05:00+01:00`,
+      no_leidos: 0, verificada: true, ultimo_texto: "Genial, muchas gracias 🙏", propuesta: null, propuesta_motivo: null,
+      msgs: [W("w0a", "entrada", "Hola, ¿cómo va lo mío? ¿Hay fecha ya?", "08:03"),
+        W("w0b", "salida", "Para hablar de su asunto necesitamos confirmar que es usted. Escriba, por favor, el código de 6 cifras que le dio el despacho.\n\n— Le atiende el asistente virtual (IA) de Ortega & Ruiz Abogados.", "08:03", { auto: true, regla_auto: "respuesta_codigo" }),
+        W("w0c", "entrada", "204611", "08:04"),
+        W("w0d", "salida", "Sobre «Desahucio por impago de rentas»: ahora está en la fase «Lanzamiento señalado».\n\nÚltima novedad: se mantiene el lanzamiento el 2 de diciembre a las 11:00 y ese día recuperará su vivienda.\n\n— Le atiende el asistente virtual (IA) de Ortega & Ruiz Abogados.", "08:04", { auto: true, regla_auto: "respuesta_codigo" }),
+        W("w0e", "entrada", "Genial, muchas gracias 🙏", "08:05")] },
+    { id: "w2", telefono: "34600999902", nombre_perfil: null, cliente_id: null, cliente: null, ultimo_entrante_en: `${HOY}T08:12:00+01:00`, ultimo_mensaje_en: `${HOY}T08:12:00+01:00`,
+      no_leidos: 1, verificada: false, ultimo_texto: "Hola, ¿lleváis temas de alquileres?…",
+      propuesta: "Hola. Sí, llevamos asuntos de arrendamiento. ¿Nos dice su nombre y le damos cita para una primera consulta esta semana?",
+      propuesta_motivo: "Número desconocido: consulta nueva, sin dar información de ningún asunto.",
+      msgs: [W("w2a", "entrada", "Hola, ¿lleváis temas de alquileres? El casero no me devuelve la fianza.", "08:12")] },
+  ];
+})();
+export async function conversaciones(): Promise<Conversacion[]> {
+  return CONVERSACIONES.map(({ msgs: _m, ...c }) => c);
+}
+export async function mensajesWA(id: string): Promise<MensajeWA[]> {
+  return CONVERSACIONES.find((c) => c.id === id)?.msgs ?? [];
+}
+export async function numeroWhatsApp() {
+  return { numero: "+34 960 000 000", modo: "pruebas" as const };
+}
+export async function sinNoticias(): Promise<SinNoticias[]> {
+  return [
+    { asunto_id: "a4", numero: "517/2025", descripcion: "Recurso de apelación", cliente_id: "c4", cliente: "Grupo Huertas, S.L.", dias: 41, borrador: null },
+    { asunto_id: "a5", numero: "377/2026", descripcion: "Herencia y partición", cliente_id: "c5", cliente: "Inmaculada Ferrer Gil", dias: 35, borrador: null },
+  ];
+}
+
+export async function hoy(): Promise<ResumenHoy> {
+  const nots = await notificaciones("pendientes");
+  return {
+    porRevisar: nots.length,
     asuntosActivos: ASUNTOS_ACTIVOS_DEMO,
     informados: 92,
     novedades: [
-      { id: "n1", hora: "09:14", cliente: "Lucía Martín Sáez", texto: "Decreto · Demanda admitida. Emplazada la demandada", estado: "Nueva", href: "/asuntos/a1" },
-      { id: "n2", hora: "09:31", cliente: "Andrés Molina Paz", texto: "Diligencia · Juicio el 14 de enero a las 10:20", estado: "Borrador listo", href: "/asuntos/a2" },
-      { id: "n3", hora: "41 d", cliente: "Grupo Huertas, S.L.", texto: "Recurso de apelación · sin noticias", estado: "Contarle algo", href: "/asuntos/a4" },
+      ...nots.map((n) => ({ id: n.id, hora: new Date(n.creada_en).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }),
+        cliente: n.cliente?.nombre ?? "Sin asignar", texto: `${n.tipo_resolucion} · ${n.fase_sugerida}`,
+        estado: (n.mensaje ? "Borrador listo" : "Nueva") as ResumenHoy["novedades"][number]["estado"], href: `/notificaciones?n=${n.id}` })),
+      { id: "sn-a4", hora: "41 d", cliente: "Grupo Huertas, S.L.", texto: "Recurso de apelación · sin noticias", estado: "Contarle algo", href: "/sin-noticias" },
     ],
   };
 }

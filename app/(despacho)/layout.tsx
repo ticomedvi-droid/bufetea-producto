@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Armazon } from "@/components/Armazon";
-import { hoy, misExtras, planes, sesion } from "@/lib/datos";
+import { conversaciones, hoy, misExtras, planes, sesion } from "@/lib/datos";
 import { ROLES } from "@/lib/extras-info";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export default async function LayoutDespacho({ children }: { children: React.Rea
   const s = await sesion();
   if (!s) redirect("/entrar");
   if (s === "sin-despacho") redirect("/alta");
-  const [extras, ps, h] = await Promise.all([misExtras(), planes(), hoy()]);
+  const [extras, ps, h, convs] = await Promise.all([misExtras(), planes(), hoy(), conversaciones()]);
   const plan = ps.find((p) => p.id === s.despacho.plan_id);
   return (
     <Armazon
@@ -20,6 +20,7 @@ export default async function LayoutDespacho({ children }: { children: React.Rea
       plan={plan?.nombre ?? s.despacho.plan_id}
       extrasActivos={extras.filter((e) => e.activo).map((e) => e.extra_id)}
       porRevisar={h.porRevisar}
+      noLeidos={convs.reduce((t, c) => t + c.no_leidos, 0)}
       demo={s.demo}
     >
       {!s.despacho.art28_aceptado_en && (

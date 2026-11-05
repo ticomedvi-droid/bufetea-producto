@@ -7,6 +7,7 @@ import { Historial } from "@/components/Historial";
 import { FormAccion } from "@/components/Envio";
 import { SITUACIONES } from "@/lib/extras-info";
 import { eliminarCliente } from "../../acciones";
+import { regenerarCodigo } from "../../acciones-nucleo";
 
 export const metadata: Metadata = { title: "Ficha de cliente" };
 
@@ -20,7 +21,8 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
       <div className="dhead" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <div><span className="lbl">Ficha de cliente</span><h2 style={{ fontSize: "1.5rem" }}>{c.nombre}</h2></div>
         <div className="seal" title="Se lo pedimos antes de hablar de su asunto por WhatsApp, teléfono o portal">
-          <span><small className="note">Código de verificación</small><b style={{ fontFamily: "var(--mono)", letterSpacing: ".12em" }}>{c.codigo ?? "—"}</b></span>
+          <span><small className="note">Código de verificación</small><b style={{ fontFamily: "var(--mono)", letterSpacing: ".12em" }} data-codigo>{c.codigo ?? "—"}</b></span>
+          <FormAccion accion={regenerarCodigo}><input type="hidden" name="cliente_id" value={c.id} /><button className="btn link" type="submit" title="El código anterior deja de valer">Generar otro</button></FormAccion>
         </div>
       </div>
       <div className="cols">

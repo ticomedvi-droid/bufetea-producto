@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { clientes } from "@/lib/datos";
+import { clientes, integracion, sesion } from "@/lib/datos";
+import { Sincronizacion } from "@/components/Sincronizacion";
+import { delPrograma } from "@/lib/fechas";
 import { IDIOMAS } from "@/lib/extras-info";
 
 export const metadata: Metadata = { title: "Clientes" };
@@ -8,15 +10,14 @@ export const metadata: Metadata = { title: "Clientes" };
 export default async function Clientes({ searchParams }: { searchParams: Promise<{ q?: string; p?: string }> }) {
   const { q = "", p = "0" } = await searchParams;
   const pagina = Math.max(0, Number(p) || 0);
-  const { filas, total } = await clientes(q, pagina);
+  const [{ filas, total }, integ, s] = await Promise.all([clientes(q, pagina), integracion(), sesion()]);
   const paginas = Math.ceil(total / 50);
   return (
     <>
+      <Sincronizacion i={integ} que="clientes" demo={!!s && s !== "sin-despacho" && s.demo} />
       <div className="toolbar">
         <form className="busca" role="search"><label className="sr" htmlFor="q">Buscar clientes</label>
           <input id="q" name="q" defaultValue={q} placeholder="Buscar por nombre, email, móvil o DNI" /></form>
-        <Link className="btn primary sm" href="/clientes/nuevo">Nuevo cliente</Link>
-        <Link className="btn ghost sm" href="/clientes/importar">Importar CSV o Excel</Link>
       </div>
       <div className="tablewrap">
         {filas.length === 0 ? (
@@ -30,7 +31,7 @@ export default async function Clientes({ searchParams }: { searchParams: Promise
             <tbody>
               {filas.map((c) => (
                 <tr key={c.id}>
-                  <td><Link href={`/clientes/${c.id}`}>{c.nombre}</Link>{c.tipo === "Empresa" && <span className="note"> · Empresa</span>}</td>
+                  <td><Link href={`/clientes/${c.id}`}>{c.nombre}</Link>{c.tipo === "Empresa" && <span className="note"> · Empresa</span>}{integ.conectada && !delPrograma(c.origen) && <span className="note"> · añadido en Bufetea</span>}</td>
                   <td>{c.telefono ?? ""}{c.telefono && c.email ? <br /> : null}<span className="note">{c.email ?? ""}</span></td>
                   <td>{IDIOMAS[c.idioma] ?? c.idioma}</td>
                   <td>{c.canal === "email" ? "Email" : "WhatsApp"}</td>

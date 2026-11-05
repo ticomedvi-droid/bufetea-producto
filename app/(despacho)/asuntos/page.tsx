@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { asuntos } from "@/lib/datos";
+import { asuntos, integracion, sesion } from "@/lib/datos";
+import { Sincronizacion } from "@/components/Sincronizacion";
 import { SITUACIONES } from "@/lib/extras-info";
 
 export const metadata: Metadata = { title: "Asuntos" };
@@ -9,11 +10,12 @@ const FILTROS = [["abierto", "Abiertos"], ["cerrado", "Cerrados"], ["archivado",
 export default async function Asuntos({ searchParams }: { searchParams: Promise<{ q?: string; s?: string; p?: string }> }) {
   const { q = "", s = "abierto", p = "0" } = await searchParams;
   const pagina = Math.max(0, Number(p) || 0);
-  const { filas, total } = await asuntos({ q, situacion: s, pagina });
+  const [{ filas, total }, integ, ses] = await Promise.all([asuntos({ q, situacion: s, pagina }), integracion(), sesion()]);
   const paginas = Math.ceil(total / 50);
   const url = (extra: Record<string, string | number>) => `/asuntos?${new URLSearchParams({ q, s, ...Object.fromEntries(Object.entries(extra).map(([k, v]) => [k, String(v)])) })}`;
   return (
     <>
+      <Sincronizacion i={integ} que="asuntos" demo={!!ses && ses !== "sin-despacho" && ses.demo} />
       <div className="toolbar">
         <form className="busca" role="search"><input type="hidden" name="s" value={s} /><label className="sr" htmlFor="q">Buscar asuntos</label>
           <input id="q" name="q" defaultValue={q} placeholder="Buscar por número, procedimiento, juzgado o descripción" /></form>
@@ -21,7 +23,6 @@ export default async function Asuntos({ searchParams }: { searchParams: Promise<
           {FILTROS.map(([v, t]) => <Link key={v} href={url({ s: v, p: 0 })} aria-current={s === v ? "page" : undefined}
             style={{ padding: "7px 14px", borderRadius: 999, textDecoration: "none", fontSize: ".86rem", background: s === v ? "var(--ink)" : "transparent", color: s === v ? "#fff" : "var(--ink-2)" }}>{t}</Link>)}
         </div>
-        <Link className="btn primary sm" href="/asuntos/nuevo">Nuevo asunto</Link>
       </div>
       <div className="tablewrap">
         {filas.length === 0 ? <div className="vacio">No hay asuntos {s !== "todos" ? SITUACIONES[s]?.toLowerCase() + "s" : ""}{q ? ` que coincidan con «${q}»` : ""}.</div> : (
